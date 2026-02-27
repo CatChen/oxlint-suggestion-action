@@ -7,20 +7,26 @@
   "singleQuote": true,
   "tabWidth": 2,
   "trailingComma": "all",
-  "importOrder": [
-    "^@action/core/(.*)$",
-    "^@action/github/(.*)$",
-    "^@action/exec/(.*)$",
-    "^@action/glob/(.*)$",
-    "^@action/(.*)$",
-    "<THIRD_PARTY_MODULES>",
-    "^[./]"
-  ],
-  "importOrderSortIndividualImports": true,
-  "importOrderMergeDuplicateImports": true,
-  "importOrderBuiltinModulesToTop": true,
-  "importOrderTypeImportsToTop": true,
   "printWidth": 80,
+  "sortPackageJson": false,
   "ignorePatterns": ["dist/", "bundle/"],
-  "sortImports": {}
+  "sortImports": {
+    "customGroups": [
+      {
+        "groupName": "actions",
+        "selector": "external",
+        "elementNamePattern": ["@actions/**"]
+      }
+    ],
+    "groups": [
+      "builtin",
+      "type",
+      "actions",
+      "external",
+      ["internal", "subpath"],
+      ["parent", "sibling", "index"],
+      "style",
+      "unknown"
+    ]
+  }
 }

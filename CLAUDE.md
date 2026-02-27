@@ -15,7 +15,7 @@ yarn
 After making changes, run:
 
 ```bash
-yarn codegen && yarn lint --fix && yarn build && yarn bundle
+yarn codegen && yarn format && yarn lint --fix && yarn build && yarn bundle
 ```
 
 Do not treat work as complete until the validation command succeeds. If it fails, fix the issues and run it again.
