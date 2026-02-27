@@ -8,10 +8,10 @@
   "scripts": {
     "codegen": "rm -rf src/__graphql__ && graphql-codegen-esm --config codegen.ts",
     "build": "rm -rf dist && yarn tsc",
-    "bundle": "rm -rf bundle && yarn ncc build src/index.ts --external eslint --source-map --license licenses.txt --out bundle",
+    "bundle": "rm -rf bundle && yarn ncc build src/index.ts --source-map --license licenses.txt --out bundle",
     "format": "oxfmt --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint -c eslint.config.js",
+    "lint": "oxlint src",
     "prepublishOnly": "pinst --disable && yarn build",
     "postpublish": "pinst --enable",
     "prepare": "is-ci || husky"
@@ -29,26 +29,20 @@
   "funding": "https://github.com/CatChen/typescript-github-action-template?sponsor=1",
   "devDependencies": {
     "@0no-co/graphqlsp": "^1.12.12",
-    "@eslint/eslintrc": "^3.0.2",
-    "@eslint/js": "^10.0.1",
     "@graphql-codegen/cli": "6.1.2",
     "@graphql-codegen/near-operation-file-preset": "^4.0.0",
     "@graphql-codegen/typescript": "5.0.8",
     "@graphql-codegen/typescript-document-nodes": "5.0.8",
-    "@graphql-eslint/eslint-plugin": "^4.4.0",
     "@types/node": "^25.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
     "@vercel/ncc": "^0.38.0",
-    "eslint": "^10.0.0",
     "graphql": "^16.9.0",
     "husky": "^9.0.5",
     "is-ci": "^4.1.0",
     "lint-staged": "^16.0.0",
+    "oxlint": "^1.24.3",
     "oxfmt": "^0.35.0",
     "pinst": "^3.0.0",
-    "typescript": "^5.0.2",
-    "typescript-eslint": "^8.0.0"
+    "typescript": "^5.0.2"
   },
   "dependencies": {
     "@actions/core": "^3.0.0",

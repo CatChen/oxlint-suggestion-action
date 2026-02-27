@@ -49,7 +49,7 @@ jobs:
       - name: Reformat
         run: |
           yarn format
-          yarn lint --fix || true # Ignore errors and leave them to the ESLint workflow
+          yarn lint --fix || true # Ignore lint errors so formatting/build can still proceed
 
       - name: Build
         run: yarn build
