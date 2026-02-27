@@ -1,4 +1,4 @@
-import type { DocumentTypeDecoration, ResultOf } from '@graphql-typed-document-node/core';
+import type { ResultOf, DocumentTypeDecoration } from '@graphql-typed-document-node/core';
 import type { Incremental, TypedDocumentString } from './graphql.js';
 export type FragmentType<TDocumentType extends DocumentTypeDecoration<any, any>> = TDocumentType extends DocumentTypeDecoration<infer TType, any> ? [TType] extends [{
     ' $fragmentName'?: infer TKey;
