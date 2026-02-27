@@ -4,7 +4,6 @@ import type { Api } from '@octokit/plugin-rest-endpoint-methods';
 import type { EndpointDefaults } from '@octokit/types';
 
 import { GitHub, getOctokitOptions } from '@actions/github/lib/utils';
-
 import { retry } from '@octokit/plugin-retry';
 import { throttling } from '@octokit/plugin-throttling';
 

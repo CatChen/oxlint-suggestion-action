@@ -11,17 +11,9 @@
   "sortPackageJson": false,
   "ignorePatterns": ["dist/", "bundle/"],
   "sortImports": {
-    "customGroups": [
-      {
-        "groupName": "actions",
-        "selector": "external",
-        "elementNamePattern": ["@actions/**"]
-      }
-    ],
     "groups": [
       "builtin",
       "type",
-      "actions",
       "external",
       ["internal", "subpath"],
       ["parent", "sibling", "index"],
