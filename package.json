@@ -62,6 +62,6 @@
       "yarn format",
       "yarn lint --fix"
     ],
-    "*.json": "yarn format"
+    "*.{json,yml,yaml,md,markdown}": "yarn format"
   }
 }
