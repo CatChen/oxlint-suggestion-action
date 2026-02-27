@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/oxlint.json",
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "bundle",
+    "src/__graphql__",
+    "schema.graphql"
+  ]
+}
