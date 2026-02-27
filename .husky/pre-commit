@@ -1,0 +1,4 @@
+yarn bundle
+git add bundle
+
+yarn lint-staged

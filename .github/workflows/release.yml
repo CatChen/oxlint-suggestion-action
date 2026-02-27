@@ -1,0 +1,153 @@
+name: Release
+# NPM publish uses OIDC (OpenID Connect) trusted publishing - no NPM_TOKEN required.
+# Configure the trusted publisher at https://www.npmjs.com (Package → Settings → Trusted publishing).
+# Set "Workflow filename" to release.yml on npmjs.com.
+# The publish job uses Node 24 for OIDC support (requires Node 22.14+ and npm 11.5.1+).
+
+on:
+  schedule:
+    - cron: '0 12 * * 0'
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: 'Release Type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+          - premajor
+          - preminor
+          - prepatch
+          - prerelease
+      prerelease:
+        description: 'Prerelease'
+        required: true
+        default: false
+        type: boolean
+      skip-if-no-diff:
+        description: 'Skip if no diff'
+        required: true
+        default: false
+        type: boolean
+      diff-targets:
+        description: 'Diff Targets'
+        required: false
+        default: '{README.md,LICENSE,bundle}'
+        type: string
+      dry-run:
+        description: 'Dry run'
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    permissions:
+      pull-requests: write
+      contents: write
+    secrets: inherit
+
+  test:
+    uses: ./.github/workflows/test.yml
+
+  eslint:
+    uses: ./.github/workflows/eslint.yml
+
+  codeql:
+    uses: ./.github/workflows/codeql.yml
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+  release:
+    name: Release
+    needs: [build, test, eslint, codeql]
+    concurrency: release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      skipped: ${{ steps.release.outputs.skipped }}
+    steps:
+      - uses: actions/create-github-app-token@v2
+        id: get-github-app-token
+        with:
+          app-id: ${{ secrets.ACCEPT_TO_SHIP_BOT_APP_ID }}
+          private-key: ${{ secrets.ACCEPT_TO_SHIP_BOT_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v6
+        with:
+          ref: 'main'
+          fetch-depth: 0
+          token: ${{ steps.get-github-app-token.outputs.token }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          check-latest: true
+          registry-url: https://registry.npmjs.org/
+          cache: yarn
+
+      - id: release
+        uses: CatChen/node-package-release-action@v2
+        with:
+          release-type: ${{ inputs.release-type || 'patch' }}
+          prerelease: ${{ inputs.prerelease || false }}
+          update-shorthand-release: true
+          dry-run: ${{ inputs.dry-run || false }}
+          skip-if-no-diff: ${{ inputs.skip-if-no-diff || github.event_name != 'workflow_dispatch' }}
+          diff-targets: ${{ inputs.diff-targets || '{README.md,LICENSE,bundle}' }}
+          github-token: ${{ steps.get-github-app-token.outputs.token }}
+
+  publish:
+    name: Publish
+    needs: [release]
+    if: ${{ needs.release.outputs.skipped != 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for OIDC trusted publishing with npm
+    steps:
+      - uses: actions/checkout@v6
+        if: ${{ !inputs.dry-run }}
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - uses: actions/checkout@v6
+        if: ${{ inputs.dry-run }}
+        with:
+          ref: ${{ github.ref_name || github.ref }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          check-latest: true
+          registry-url: https://registry.npmjs.org/
+          cache: yarn
+
+      - name: Build
+        run: |
+          yarn install
+          yarn build
+
+      - name: Publish
+        env:
+          DRY_RUN: ${{ inputs.dry-run || false }}
+        run: |
+          echo "::group::npm config"
+          npm config ls -l
+          echo "::endgroup::"
+
+          echo "::group::npm publish"
+          if [[ "$DRY_RUN" = true ]]
+          then
+            npm publish --dry-run
+          else
+            npm publish
+          fi
+          echo "::endgroup::"

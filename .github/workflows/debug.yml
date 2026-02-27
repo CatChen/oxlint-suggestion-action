@@ -1,0 +1,116 @@
+name: Debug
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, '[0-9]+-[0-9]+-*']
+    types:
+      [
+        assigned,
+        unassigned,
+        labeled,
+        unlabeled,
+        opened,
+        edited,
+        closed,
+        reopened,
+        synchronize,
+        converted_to_draft,
+        ready_for_review,
+        locked,
+        unlocked,
+        review_requested,
+        review_request_removed,
+        auto_merge_enabled,
+        auto_merge_disabled,
+      ]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  check_run:
+    types: [created, rerequested, completed, requested_action]
+  check_suite:
+    types: [completed]
+  workflow_run:
+    workflows: ['Build', 'Test', 'ESLint', 'Dependabot']
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  debug_information:
+    name: Debug Information
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print environment variables
+        run: printenv
+
+      - name: Print events
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          WORKFLOW_NAME: ${{ github.event.workflow.name }}
+          WORKFLOW_URL: ${{ github.event.workflow.html_url }}
+          WORKFLOW_RUN_EVENT: ${{ github.event.workflow_run.event }}
+          WORKFLOW_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          echo "::notice::Event name: $EVENT_NAME"
+          echo "::notice::Event action: $EVENT_ACTION"
+          if [ -n "$WORKFLOW_NAME" ]
+          then
+            echo "::notice::Workflow Name: $WORKFLOW_NAME"
+            echo "::notice::Workflow URL: $WORKFLOW_URL"
+            echo "::notice::Workflow run event: $WORKFLOW_RUN_EVENT"
+            echo "::notice::Workflow run URL: $WORKFLOW_RUN_URL"
+            echo "::notice::Workflow run ID: $WORKFLOW_RUN_ID"
+          fi
+
+      - name: Print contexts
+        env:
+          GITHUB: ${{ toJSON(github) }}
+          ENV: ${{ toJSON(env)}}
+          VARS: ${{ toJSON(vars)}}
+          JOB: ${{ toJSON(job) }}
+          INPUTS: ${{ toJSON(inputs) }}
+          STEPS: ${{ toJSON(steps) }}
+        run: |
+          echo "::debug::github =
+          $GITHUB"
+          echo "::debug::env =
+          $ENV"
+          echo "::debug::vars =
+          $VARS"
+          echo "::debug::job =
+          $JOB"
+          echo "::debug::inputs =
+          $INPUTS"
+          echo "::debug::steps =
+          $STEPS"
+
+      - name: Create JSON files
+        id: create-json-files
+        env:
+          GITHUB: ${{ toJSON(github) }}
+          ENV: ${{ toJSON(env)}}
+          VARS: ${{ toJSON(vars)}}
+          JOB: ${{ toJSON(job) }}
+          INPUTS: ${{ toJSON(inputs) }}
+          STEPS: ${{ toJSON(steps) }}
+        run: |
+          TEMP_JSON_DIRECTORY="$(mktemp -d)"
+          printenv > "$TEMP_JSON_DIRECTORY/.env"
+          echo "$GITHUB" > "$TEMP_JSON_DIRECTORY/github.json"
+          echo "$ENV" > "$TEMP_JSON_DIRECTORY/env.json"
+          echo "$VARS" > "$TEMP_JSON_DIRECTORY/vars.json"
+          echo "$JOB" > "$TEMP_JSON_DIRECTORY/job.json"
+          echo "$INPUTS" > "$TEMP_JSON_DIRECTORY/inputs.json"
+          echo "$STEPS" > "$TEMP_JSON_DIRECTORY/steps.json"
+          echo "temp-json-directory=$TEMP_JSON_DIRECTORY" >> $GITHUB_OUTPUT
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: debug
+          path: ${{ steps.create-json-files.outputs.temp-json-directory }}
+          retention-days: 30

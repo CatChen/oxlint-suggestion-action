@@ -1,0 +1,37 @@
+name: ESLint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, '[0-9]+-[0-9]+-*']
+  workflow_run:
+    workflows: ['Dependabot']
+    branches-ignore: ['workflows/tests/*']
+    types:
+      - completed
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  eslint:
+    name: ESLint
+    if: ${{ !startsWith(github.head_ref || github.event.workflow_run.head_branch, 'workflows/tests/') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          check-latest: true
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install
+
+      - uses: CatChen/eslint-suggestion-action@v4
+        with:
+          targets: 'src'
+          fail-check: ${{ github.event_name == 'workflow_call' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}

@@ -1,0 +1,68 @@
+{
+  "name": "typescript-github-action-template",
+  "version": "0.2.52",
+  "description": "A template to create custom GitHub Action with TypeScript/JavaScript.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.js",
+  "type": "module",
+  "scripts": {
+    "codegen": "rm -rf src/__graphql__ && graphql-codegen-esm --config codegen.ts",
+    "build": "rm -rf dist && yarn tsc",
+    "bundle": "rm -rf bundle && yarn ncc build src/index.ts --external eslint --source-map --license licenses.txt --out bundle",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint -c eslint.config.js",
+    "prepublishOnly": "pinst --disable && yarn build",
+    "postpublish": "pinst --enable",
+    "prepare": "is-ci || husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CatChen/typescript-github-action-template.git"
+  },
+  "author": "Cat Chen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CatChen/typescript-github-action-template/issues"
+  },
+  "homepage": "https://github.com/CatChen/typescript-github-action-template#readme",
+  "funding": "https://github.com/CatChen/typescript-github-action-template?sponsor=1",
+  "devDependencies": {
+    "@0no-co/graphqlsp": "^1.12.12",
+    "@eslint/eslintrc": "^3.0.2",
+    "@eslint/js": "^10.0.1",
+    "@graphql-codegen/cli": "6.1.2",
+    "@graphql-codegen/near-operation-file-preset": "^4.0.0",
+    "@graphql-codegen/typescript": "5.0.8",
+    "@graphql-codegen/typescript-document-nodes": "5.0.8",
+    "@graphql-eslint/eslint-plugin": "^4.4.0",
+    "@serverless-guru/prettier-plugin-import-order": "^0.4.2",
+    "@types/node": "^25.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vercel/ncc": "^0.38.0",
+    "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.0.0",
+    "graphql": "^16.9.0",
+    "husky": "^9.0.5",
+    "is-ci": "^4.1.0",
+    "lint-staged": "^16.0.0",
+    "pinst": "^3.0.0",
+    "prettier": "^3.0.2",
+    "typescript": "^5.0.2",
+    "typescript-eslint": "^8.0.0"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.0",
+    "@actions/github": "^9.0.0",
+    "@graphql-typed-document-node/core": "^3.2.0",
+    "@octokit/plugin-retry": "^8.0.1",
+    "@octokit/plugin-throttling": "^11.0.1"
+  },
+  "lint-staged": {
+    "*.(ts,js)": "yarn lint --fix",
+    "*.json": "yarn prettier -w",
+    "*.(yml,yaml)": "yarn prettier -w",
+    "*.(md,markdown)": "yarn prettier -w"
+  }
+}

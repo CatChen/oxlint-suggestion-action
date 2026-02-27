@@ -1,0 +1,15 @@
+name: 'TypeScript Github Action Template'
+description: 'A template to create custom GitHub Action with TypeScript/JavaScript.'
+inputs:
+  github-token:
+    description: 'GitHub token.'
+    required: false
+    default: ${{ github.token }}
+runs:
+  using: 'node24'
+  main: 'bundle/index.js'
+  post: 'bundle/index.js'
+  post-if: always()
+branding:
+  icon: 'box'
+  color: 'yellow'

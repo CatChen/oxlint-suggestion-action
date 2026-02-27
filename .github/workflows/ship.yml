@@ -1,0 +1,119 @@
+name: Ship
+
+on:
+  pull_request:
+    branches: [main]
+    types:
+      - labeled
+      - unlabeled
+      - edited
+      - closed
+      - reopened
+      - synchronize
+      - review_requested
+      - review_request_removed
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+
+concurrency:
+  group: |-
+    ${{
+      github.event.pull_request.number ||
+      github.event.check_run.pull_requests[0].number ||
+      github.event.check_suite.pull_requests[0].number ||
+      github.event.workflow_run.pull_requests[0].number ||
+      github.sha ||
+      github.ref
+    }}
+
+jobs:
+  concurrency-group:
+    name: Concurrency group
+    if: ${{ !startsWith(github.head_ref, 'workflows/tests/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Concurrency group
+        env:
+          CONCURRENCY_GROUP: |-
+            ${{
+              github.event.pull_request.number ||
+              github.event.check_run.pull_requests[0].number ||
+              github.event.check_suite.pull_requests[0].number ||
+              github.event.workflow_run.pull_requests[0].number ||
+              github.sha ||
+              github.ref
+            }}
+        run: |
+          echo "::notice::Concurrency group is $CONCURRENCY_GROUP"
+
+  accept-to-ship:
+    name: Accept to Ship
+    needs: [concurrency-group]
+    if: |-
+      ${{
+        !startsWith(github.head_ref, 'workflows/tests/') &&
+        github.base_ref == 'main' ||
+        github.event.pull_request.base.ref == 'main' ||
+        contains(github.event.check_run.pull_requests[0].base.ref, 'main') ||
+        contains(github.event.check_suite.pull_requests[0].base.ref, 'main') ||
+        contains(github.event.workflow_run.pull_requests[0].base.ref, 'main')
+      }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    outputs:
+      skipped: ${{ steps.ship.outputs.skipped }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/create-github-app-token@v2
+        id: get-github-app-token
+        with:
+          app-id: ${{ secrets.ACCEPT_TO_SHIP_BOT_APP_ID }}
+          private-key: ${{ secrets.ACCEPT_TO_SHIP_BOT_APP_PRIVATE_KEY }}
+
+      - id: ship
+        uses: CatChen/accept-to-ship-action@v0.8
+        with:
+          github-token: ${{ steps.get-github-app-token.outputs.token }}
+          merge-method: squash
+          timeout: 0
+          use-auto-merge: true
+
+  pass-to-ship:
+    name: Pass to Ship
+    needs: [concurrency-group]
+    if: |-
+      ${{
+        !startsWith(github.head_ref, 'workflows/tests/') &&
+        github.base_ref == 'main' ||
+        github.event.pull_request.base.ref == 'main' ||
+        contains(github.event.check_run.pull_requests[0].base.ref, 'main') ||
+        contains(github.event.check_suite.pull_requests[0].base.ref, 'main') ||
+        contains(github.event.workflow_run.pull_requests[0].base.ref, 'main')
+      }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    outputs:
+      skipped: ${{ steps.ship.outputs.skipped }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/create-github-app-token@v2
+        id: get-github-app-token
+        with:
+          app-id: ${{ secrets.ACCEPT_TO_SHIP_BOT_APP_ID }}
+          private-key: ${{ secrets.ACCEPT_TO_SHIP_BOT_APP_PRIVATE_KEY }}
+
+      - id: ship
+        uses: CatChen/accept-to-ship-action@v0.8
+        with:
+          github-token: ${{ steps.get-github-app-token.outputs.token }}
+          merge-method: squash
+          timeout: 0
+          request-zero-accept-zero: true
+          custom-hashtag: '#pass2ship'
+          use-auto-merge: true

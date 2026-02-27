@@ -1,0 +1,66 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, '[0-9]+-[0-9]+-*']
+  workflow_dispatch:
+  workflow_call:
+  workflow_run:
+    workflows: ['Dependabot']
+    branches-ignore: ['workflows/tests/*']
+    types:
+      - completed
+
+jobs:
+  build:
+    name: Build
+    if: ${{ !startsWith(github.head_ref || github.event.workflow_run.head_branch, 'workflows/tests/') }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - uses: actions/create-github-app-token@v2
+        id: get-github-app-token
+        with:
+          app-id: ${{ secrets.CHECK_GIT_STATUS_BOT_APP_ID }}
+          private-key: ${{ secrets.CHECK_GIT_STATUS_BOT_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.head_ref }}
+          token: ${{ steps.get-github-app-token.outputs.token }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          check-latest: true
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Codegen
+        run: yarn codegen
+
+      - name: Reformat
+        run: |
+          yarn prettier --write .
+          yarn lint --fix || true # Ignore errors and leave them to the ESLint workflow
+
+      - name: Build
+        run: yarn build
+
+      - name: Bundle
+        run: yarn bundle
+
+      - uses: CatChen/check-git-status-action@v2
+        id: check-git-status
+        with:
+          fail-if-not-clean: ${{ github.actor != 'dependabot[bot]' || github.actor_id != 49699333 }}
+          push-if-not-clean: true
+          request-changes-if-not-clean: false
+          push-token: ${{ steps.get-github-app-token.outputs.token }}

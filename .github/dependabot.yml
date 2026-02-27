@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: daily
+    groups:
+      types:
+        patterns:
+          - '@types/*'
+      development-dependencies:
+        dependency-type: 'development'
+        exclude-patterns:
+          - '@types/*'
+      actions:
+        patterns:
+          - '@actions/*'
+    reviewers:
+      - CatChen
+    assignees:
+      - CatChen
+    labels:
+      - accept2ship
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: daily
+    assignees:
+      - CatChen
+    labels:
+      - pass2ship
