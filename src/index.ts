@@ -1,5 +1,4 @@
 import { getBooleanInput, getInput, setFailed } from '@actions/core';
-
 export async function oxlintSuggestion(_inputs: {
   requestChanges: boolean;
   failCheck: boolean;
