@@ -13,19 +13,19 @@ import * as types from './graphql.js';
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-  '\n  query ViewerLogin {\n    viewer {\n      id\n      login\n    }\n  }\n': typeof types.ViewerLoginDocument;
+  '\n  query Noop {\n    viewer {\n      login\n    }\n  }\n': typeof types.NoopDocument;
 };
 const documents: Documents = {
-  '\n  query ViewerLogin {\n    viewer {\n      id\n      login\n    }\n  }\n':
-    types.ViewerLoginDocument,
+  '\n  query Noop {\n    viewer {\n      login\n    }\n  }\n':
+    types.NoopDocument,
 };
 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: '\n  query ViewerLogin {\n    viewer {\n      id\n      login\n    }\n  }\n',
-): typeof import('./graphql.js').ViewerLoginDocument;
+  source: '\n  query Noop {\n    viewer {\n      login\n    }\n  }\n',
+): typeof import('./graphql.js').NoopDocument;
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

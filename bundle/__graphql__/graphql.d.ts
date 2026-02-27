@@ -33338,14 +33338,13 @@ export type WorkflowsParametersInput = {
     /** Workflows that must pass for this rule to pass. */
     workflows: Array<WorkflowFileReferenceInput>;
 };
-export type ViewerLoginQueryVariables = Exact<{
+export type NoopQueryVariables = Exact<{
     [key: string]: never;
 }>;
-export type ViewerLoginQuery = {
+export type NoopQuery = {
     __typename: 'Query';
     viewer: {
         __typename: 'User';
-        id: string;
         login: string;
     };
 };
@@ -33356,4 +33355,4 @@ export declare class TypedDocumentString<TResult, TVariables> extends String imp
     constructor(value: string, __meta__?: Record<string, any> | undefined);
     toString(): string & DocumentTypeDecoration<TResult, TVariables>;
 }
-export declare const ViewerLoginDocument: TypedDocumentString<ViewerLoginQuery, ViewerLoginQueryVariables>;
+export declare const NoopDocument: TypedDocumentString<NoopQuery, NoopQueryVariables>;

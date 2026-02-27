@@ -1,15 +1,36 @@
-name: 'TypeScript Github Action Template'
-description: 'A template to create custom GitHub Action with TypeScript/JavaScript.'
+name: 'Oxlint Feedback'
+description: 'Pull Request Feedback from Oxlint'
 inputs:
+  request-changes:
+    description: "Request changes if Oxlint doesn't pass."
+    required: false
+    default: true
+  fail-check:
+    description: "Fail the workflow and its corresponding check if Oxlint doesn't pass."
+    required: false
+    default: false
   github-token:
     description: 'GitHub token.'
     required: false
     default: ${{ github.token }}
+  directory:
+    description: "Directory to run Oxlint if it's not the project's root directory."
+    required: false
+    default: './'
+  targets:
+    description: 'Files, directories, and/or globs to run Oxlint.'
+    required: false
+    default: '.'
+  oxlint-bin-path:
+    description: 'Path to the Oxlint binary file.'
+    required: false
+    default: './node_modules/.bin/oxlint'
+  config-path:
+    description: 'Path to the Oxlint config file.'
+    required: false
 runs:
   using: 'node24'
   main: 'bundle/index.js'
-  post: 'bundle/index.js'
-  post-if: always()
 branding:
-  icon: 'box'
-  color: 'yellow'
+  icon: 'plus-square'
+  color: 'blue'

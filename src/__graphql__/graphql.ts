@@ -36338,11 +36338,11 @@ export type WorkflowsParametersInput = {
   workflows: Array<WorkflowFileReferenceInput>;
 };
 
-export type ViewerLoginQueryVariables = Exact<{ [key: string]: never }>;
+export type NoopQueryVariables = Exact<{ [key: string]: never }>;
 
-export type ViewerLoginQuery = {
+export type NoopQuery = {
   __typename: 'Query';
-  viewer: { __typename: 'User'; id: string; login: string };
+  viewer: { __typename: 'User'; login: string };
 };
 
 export class TypedDocumentString<TResult, TVariables>
@@ -36366,14 +36366,10 @@ export class TypedDocumentString<TResult, TVariables>
   }
 }
 
-export const ViewerLoginDocument = new TypedDocumentString(`
-    query ViewerLogin {
+export const NoopDocument = new TypedDocumentString(`
+    query Noop {
   viewer {
-    id
     login
   }
 }
-    `) as unknown as TypedDocumentString<
-  ViewerLoginQuery,
-  ViewerLoginQueryVariables
->;
+    `) as unknown as TypedDocumentString<NoopQuery, NoopQueryVariables>;
