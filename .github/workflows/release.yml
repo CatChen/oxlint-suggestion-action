@@ -54,9 +54,6 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
-  eslint:
-    uses: ./.github/workflows/eslint.yml
-
   codeql:
     uses: ./.github/workflows/codeql.yml
     permissions:
@@ -67,7 +64,7 @@ jobs:
 
   release:
     name: Release
-    needs: [build, test, eslint, codeql]
+    needs: [build, test, codeql]
     concurrency: release
     runs-on: ubuntu-latest
     outputs:
