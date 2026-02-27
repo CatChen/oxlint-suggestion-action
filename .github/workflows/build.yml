@@ -48,7 +48,7 @@ jobs:
 
       - name: Reformat
         run: |
-          yarn prettier --write .
+          yarn format
           yarn lint --fix || true # Ignore errors and leave them to the ESLint workflow
 
       - name: Build

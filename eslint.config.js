@@ -1,5 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import graphqlPlugin from '@graphql-eslint/eslint-plugin';
@@ -21,7 +22,7 @@ export default ts.config(
       es2022: true,
       node: true,
     },
-    extends: ['eslint:recommended', 'plugin:prettier/recommended'],
+    extends: ['eslint:recommended'],
     parser: '@typescript-eslint/parser',
     parserOptions: {
       project: './tsconfig.json',

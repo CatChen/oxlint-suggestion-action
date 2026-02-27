@@ -9,6 +9,7 @@
     "codegen": "rm -rf src/__graphql__ && graphql-codegen-esm --config codegen.ts",
     "build": "rm -rf dist && yarn tsc",
     "bundle": "rm -rf bundle && yarn ncc build src/index.ts --external eslint --source-map --license licenses.txt --out bundle",
+    "format": "oxfmt --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint -c eslint.config.js",
     "prepublishOnly": "pinst --disable && yarn build",
@@ -35,20 +36,17 @@
     "@graphql-codegen/typescript": "5.0.8",
     "@graphql-codegen/typescript-document-nodes": "5.0.8",
     "@graphql-eslint/eslint-plugin": "^4.4.0",
-    "@serverless-guru/prettier-plugin-import-order": "^0.4.2",
     "@types/node": "^25.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "@vercel/ncc": "^0.38.0",
     "eslint": "^10.0.0",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-prettier": "^5.0.0",
     "graphql": "^16.9.0",
     "husky": "^9.0.5",
     "is-ci": "^4.1.0",
     "lint-staged": "^16.0.0",
+    "oxfmt": "^0.35.0",
     "pinst": "^3.0.0",
-    "prettier": "^3.0.2",
     "typescript": "^5.0.2",
     "typescript-eslint": "^8.0.0"
   },
@@ -60,9 +58,10 @@
     "@octokit/plugin-throttling": "^11.0.1"
   },
   "lint-staged": {
-    "*.(ts,js)": "yarn lint --fix",
-    "*.json": "yarn prettier -w",
-    "*.(yml,yaml)": "yarn prettier -w",
-    "*.(md,markdown)": "yarn prettier -w"
+    "*.{ts,js}": [
+      "yarn format",
+      "yarn lint --fix"
+    ],
+    "*.{json,yml,yaml,md,markdown}": "yarn format"
   }
 }
