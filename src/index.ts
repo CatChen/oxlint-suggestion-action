@@ -1,5 +1,14 @@
-import { getBooleanInput, getInput, setFailed } from '@actions/core';
-export async function oxlintSuggestion(_inputs: {
+import { getBooleanInput, getInput, notice, setFailed } from '@actions/core';
+
+import { changeDirectory } from './changeDirectory.js';
+import { parseOxlintOutput } from './parseOxlintOutput.js';
+import { runOxlint } from './runOxlint.js';
+
+export async function oxlintSuggestion({
+  directory,
+  targets,
+  oxlintBinPath,
+}: {
   requestChanges: boolean;
   failCheck: boolean;
   githubToken: string;
@@ -7,7 +16,11 @@ export async function oxlintSuggestion(_inputs: {
   targets: string;
   oxlintBinPath: string;
   configPath: string;
-}): Promise<void> {}
+}): Promise<void> {
+  changeDirectory(directory);
+  const output = await runOxlint({ oxlintBinPath, targets });
+  const parsedOutput = parseOxlintOutput(output);
+}
 
 async function run(): Promise<void> {
   await oxlintSuggestion({
