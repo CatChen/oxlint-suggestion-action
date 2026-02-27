@@ -1,3 +1,5 @@
+import type { ResultOf } from '@graphql-typed-document-node/core';
+
 import {
   error,
   getInput,
@@ -6,7 +8,6 @@ import {
   saveState,
   setFailed,
 } from '@actions/core';
-import type { ResultOf } from '@graphql-typed-document-node/core';
 
 import { graphql } from './__graphql__/gql.js';
 import { getOctokit } from './getOctokit.js';
