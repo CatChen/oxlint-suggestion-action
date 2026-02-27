@@ -21,6 +21,6 @@
   "importOrderBuiltinModulesToTop": true,
   "importOrderTypeImportsToTop": true,
   "printWidth": 80,
-  "sortPackageJson": false,
-  "ignorePatterns": ["dist/", "bundle/"]
+  "ignorePatterns": ["dist/", "bundle/"],
+  "sortImports": {}
 }

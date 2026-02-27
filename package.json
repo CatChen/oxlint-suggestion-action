@@ -2,9 +2,20 @@
   "name": "typescript-github-action-template",
   "version": "0.2.52",
   "description": "A template to create custom GitHub Action with TypeScript/JavaScript.",
+  "homepage": "https://github.com/CatChen/typescript-github-action-template#readme",
+  "bugs": {
+    "url": "https://github.com/CatChen/typescript-github-action-template/issues"
+  },
+  "license": "MIT",
+  "author": "Cat Chen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CatChen/typescript-github-action-template.git"
+  },
+  "funding": "https://github.com/CatChen/typescript-github-action-template?sponsor=1",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
-  "type": "module",
   "scripts": {
     "codegen": "rm -rf src/__graphql__ && graphql-codegen-esm --config codegen.ts",
     "build": "rm -rf dist && yarn tsc",
@@ -16,17 +27,13 @@
     "postpublish": "pinst --enable",
     "prepare": "is-ci || husky"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CatChen/typescript-github-action-template.git"
+  "dependencies": {
+    "@actions/core": "^3.0.0",
+    "@actions/github": "^9.0.0",
+    "@graphql-typed-document-node/core": "^3.2.0",
+    "@octokit/plugin-retry": "^8.0.1",
+    "@octokit/plugin-throttling": "^11.0.1"
   },
-  "author": "Cat Chen",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/CatChen/typescript-github-action-template/issues"
-  },
-  "homepage": "https://github.com/CatChen/typescript-github-action-template#readme",
-  "funding": "https://github.com/CatChen/typescript-github-action-template?sponsor=1",
   "devDependencies": {
     "@0no-co/graphqlsp": "^1.12.12",
     "@eslint/eslintrc": "^3.0.2",
@@ -50,15 +57,11 @@
     "typescript": "^5.0.2",
     "typescript-eslint": "^8.0.0"
   },
-  "dependencies": {
-    "@actions/core": "^3.0.0",
-    "@actions/github": "^9.0.0",
-    "@graphql-typed-document-node/core": "^3.2.0",
-    "@octokit/plugin-retry": "^8.0.1",
-    "@octokit/plugin-throttling": "^11.0.1"
-  },
   "lint-staged": {
-    "*.(ts,js)": "yarn lint --fix",
-    "*.{ts,js,mjs,cjs,cts,mts,tsx,jsx,json}": "yarn oxfmt --write"
+    "*.{ts,js}": [
+      "yarn lint --fix",
+      "yarn format"
+    ],
+    "*.json": "yarn format"
   }
 }
