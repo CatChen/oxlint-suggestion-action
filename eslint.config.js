@@ -21,7 +21,7 @@ export default ts.config(
       es2022: true,
       node: true,
     },
-    extends: ['eslint:recommended', 'plugin:prettier/recommended'],
+    extends: ['eslint:recommended'],
     parser: '@typescript-eslint/parser',
     parserOptions: {
       project: './tsconfig.json',
