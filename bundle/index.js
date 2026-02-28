@@ -38185,15 +38185,16 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
                 const lines = getDiagnosticLines(diagnostic);
                 for (const line of lines) {
                     if (indexedModifiedLines[line]) {
+                        info(`  Matched line: ${line}`);
                         const reviewComment = getReviewCommentFromDiagnostic(diagnostic, line, file.filename);
                         const matchedComments = matchReviewComments(existingReviewComments, reviewComment);
                         commentsCounter++;
                         if (matchedComments.length === 0) {
                             reviewComments.push(reviewComment);
-                            info(`    Comment queued @ ${line}`);
+                            info(`    Comment queued`);
                         }
                         else {
-                            info(`    Comment skipped @ ${line}`);
+                            info(`    Comment skipped`);
                         }
                     }
                     else {
