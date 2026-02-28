@@ -50,7 +50,8 @@
     "@actions/github": "^9.0.0",
     "@graphql-typed-document-node/core": "^3.2.0",
     "@octokit/plugin-retry": "^8.0.1",
-    "@octokit/plugin-throttling": "^11.0.1"
+    "@octokit/plugin-throttling": "^11.0.1",
+    "glob": "^13.0.6"
   },
   "lint-staged": {
     "*.{ts,js}": [

@@ -1,4 +1,10 @@
-import { getBooleanInput, getInput, setFailed } from '@actions/core';
+import {
+  endGroup,
+  getBooleanInput,
+  getInput,
+  setFailed,
+  startGroup,
+} from '@actions/core';
 
 import { changeDirectory } from './changeDirectory.js';
 import { parseOxlintOutput } from './parseOxlintOutput.js';
@@ -17,9 +23,11 @@ export async function oxlintSuggestion({
   oxlintBinPath: string;
   configPath: string;
 }): Promise<void> {
+  startGroup('Oxlint');
   changeDirectory(directory);
-  const output = await runOxlint({ oxlintBinPath, targets });
+  const output = await runOxlint({ oxlintBinPath, directory, targets });
   parseOxlintOutput(output);
+  endGroup();
 }
 
 async function run(): Promise<void> {
