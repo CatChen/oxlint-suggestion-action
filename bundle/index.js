@@ -30755,7 +30755,7 @@ function warning(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function notice(message, properties = {}) {
-    issueCommand('notice', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('notice', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Writes info to log with console.log.
@@ -30923,21 +30923,24 @@ var runOxlint_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
+
 function runOxlint(_a) {
     return runOxlint_awaiter(this, arguments, void 0, function* ({ oxlintBinPath, directory, targets, configPath, }) {
-        const resolvedOxlintBinPath = (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), oxlintBinPath);
-        if (!(0,external_node_fs_namespaceObject.existsSync)(resolvedOxlintBinPath)) {
-            throw new Error(`Oxlint binary cannot be found at ${resolvedOxlintBinPath}`);
+        const absoluteOxlintBinPath = (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), oxlintBinPath);
+        if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteOxlintBinPath)) {
+            throw new Error(`Oxlint binary cannot be found at ${absoluteOxlintBinPath}`);
         }
-        const resolvedConfigPath = configPath ? (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), configPath) : null;
-        if (resolvedConfigPath && !(0,external_node_fs_namespaceObject.existsSync)(resolvedConfigPath)) {
-            throw new Error(`Oxlint config cannot be found at ${resolvedConfigPath}`);
-        }
+        notice(`Using Oxlint from: ${absoluteOxlintBinPath}`);
         const args = [...ts((0,external_node_path_namespaceObject.join)(directory, targets)), '--format=json'];
-        if (resolvedConfigPath) {
-            args.push(`--config=${resolvedConfigPath}`);
+        const absoluteConfigPath = configPath ? (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), configPath) : null;
+        if (absoluteConfigPath) {
+            if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteConfigPath)) {
+                throw new Error(`Oxlint config cannot be found at ${absoluteConfigPath}`);
+            }
+            notice(`Using Oxlint config from: ${absoluteConfigPath}`);
+            args.push(`--config=${absoluteConfigPath}`);
         }
-        const oxlintOutput = yield getExecOutput(resolvedOxlintBinPath, args, {
+        const oxlintOutput = yield getExecOutput(absoluteOxlintBinPath, args, {
             ignoreReturnCode: true,
             silent: true,
         });
