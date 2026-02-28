@@ -1,23 +1,19 @@
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 
 import { getExecOutput } from '@actions/exec';
+import { globSync } from 'glob';
 
 export async function runOxlint({
   oxlintBinPath,
+  directory,
   targets,
 }: {
   oxlintBinPath: string;
+  directory: string;
   targets: string;
 }): Promise<string> {
-  const args = [
-    ...targets
-      .split(/\s+/)
-      .map((target) => target.trim())
-      .filter((target) => target.length > 0),
-    '--format=json',
-  ];
   const resolvedOxlintBinPath = resolve(cwd(), oxlintBinPath);
   if (!existsSync(resolvedOxlintBinPath)) {
     throw new Error(
@@ -25,10 +21,14 @@ export async function runOxlint({
     );
   }
 
-  const oxlintOutput = await getExecOutput(resolvedOxlintBinPath, args, {
-    ignoreReturnCode: true,
-    silent: true,
-  });
+  const oxlintOutput = await getExecOutput(
+    resolvedOxlintBinPath,
+    [...globSync(join(directory, targets)), '--format=json'],
+    {
+      ignoreReturnCode: true,
+      silent: true,
+    },
+  );
 
   return oxlintOutput.stdout;
 }
