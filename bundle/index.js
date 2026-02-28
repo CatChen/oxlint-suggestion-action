@@ -30842,7 +30842,7 @@ function parseOxlintOutput(output) {
         info(`File name: ${file}`);
         for (const diagnostic of diagnostics) {
             const line = (_d = (_c = diagnostic.labels[0]) === null || _c === void 0 ? void 0 : _c.span.line) !== null && _d !== void 0 ? _d : 1;
-            info(`  [${diagnostic.severity}] ${diagnostic.message} @ ${line}`);
+            info(`  (${diagnostic.severity}) ${diagnostic.message} @ ${line}`);
         }
     }
     return parsed;

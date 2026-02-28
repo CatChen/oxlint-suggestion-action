@@ -45,7 +45,7 @@ export function parseOxlintOutput(output: string): OxlintOutput {
     info(`File name: ${file}`);
     for (const diagnostic of diagnostics) {
       const line = diagnostic.labels[0]?.span.line ?? 1;
-      info(`  [${diagnostic.severity}] ${diagnostic.message} @ ${line}`);
+      info(`  (${diagnostic.severity}) ${diagnostic.message} @ ${line}`);
     }
   }
 
