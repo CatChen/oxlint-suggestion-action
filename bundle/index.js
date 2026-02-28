@@ -30755,7 +30755,7 @@ function warning(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function notice(message, properties = {}) {
-    issueCommand('notice', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('notice', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Writes info to log with console.log.
@@ -30923,13 +30923,24 @@ var runOxlint_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
+
 function runOxlint(_a) {
-    return runOxlint_awaiter(this, arguments, void 0, function* ({ oxlintBinPath, directory, targets, }) {
-        const resolvedOxlintBinPath = (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), oxlintBinPath);
-        if (!(0,external_node_fs_namespaceObject.existsSync)(resolvedOxlintBinPath)) {
-            throw new Error(`Oxlint binary cannot be found at ${resolvedOxlintBinPath}`);
+    return runOxlint_awaiter(this, arguments, void 0, function* ({ oxlintBinPath, targets, configPath, }) {
+        const absoluteOxlintBinPath = (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), oxlintBinPath);
+        if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteOxlintBinPath)) {
+            throw new Error(`Oxlint binary cannot be found at ${absoluteOxlintBinPath}`);
         }
-        const oxlintOutput = yield getExecOutput(resolvedOxlintBinPath, [...ts((0,external_node_path_namespaceObject.join)(directory, targets)), '--format=json'], {
+        notice(`Using Oxlint from: ${absoluteOxlintBinPath}`);
+        const args = [...ts(targets), '--format=json'];
+        const absoluteConfigPath = configPath ? (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), configPath) : null;
+        if (absoluteConfigPath) {
+            if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteConfigPath)) {
+                throw new Error(`Oxlint config cannot be found at ${absoluteConfigPath}`);
+            }
+            notice(`Using Oxlint config from: ${absoluteConfigPath}`);
+            args.push(`--config=${absoluteConfigPath}`);
+        }
+        const oxlintOutput = yield getExecOutput(absoluteOxlintBinPath, args, {
             ignoreReturnCode: true,
             silent: true,
         });
@@ -30952,10 +30963,14 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 function oxlintSuggestion(_a) {
-    return src_awaiter(this, arguments, void 0, function* ({ directory, targets, oxlintBinPath, }) {
+    return src_awaiter(this, arguments, void 0, function* ({ directory, targets, oxlintBinPath, configPath, }) {
         startGroup('Oxlint');
         changeDirectory(directory);
-        const output = yield runOxlint({ oxlintBinPath, directory, targets });
+        const output = yield runOxlint({
+            oxlintBinPath,
+            targets,
+            configPath,
+        });
         parseOxlintOutput(output);
         endGroup();
     });
