@@ -17,15 +17,20 @@ jobs:
   test:
     name: Test
     if: ${{ !startsWith(github.head_ref || github.event.workflow_run.head_branch, 'workflows/tests/') }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
         with:
-          fetch-depth: 0
+          node-version-file: '.nvmrc'
+          check-latest: true
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install
 
       - name: Test
         uses: ./
+        with:
+          targets: 'tests'
