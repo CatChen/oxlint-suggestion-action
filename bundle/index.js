@@ -30903,7 +30903,7 @@ function oxlintSuggestion(_a) {
     return src_awaiter(this, arguments, void 0, function* ({ directory, targets, oxlintBinPath, }) {
         changeDirectory(directory);
         const output = yield runOxlint({ oxlintBinPath, targets });
-        const parsedOutput = parseOxlintOutput(output);
+        parseOxlintOutput(output);
     });
 }
 function run() {
