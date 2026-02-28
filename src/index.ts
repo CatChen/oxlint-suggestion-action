@@ -25,7 +25,7 @@ export async function oxlintSuggestion({
 }): Promise<void> {
   startGroup('Oxlint');
   changeDirectory(directory);
-  const output = await runOxlint({ oxlintBinPath, targets });
+  const output = await runOxlint({ oxlintBinPath, directory, targets });
   parseOxlintOutput(output);
   endGroup();
 }
