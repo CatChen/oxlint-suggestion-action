@@ -30731,13 +30731,13 @@ function info(message) {
  * @param name The name of the output group
  */
 function startGroup(name) {
-    issue('group', name);
+    command_issue('group', name);
 }
 /**
  * End an output group.
  */
 function endGroup() {
-    issue('endgroup');
+    command_issue('endgroup');
 }
 /**
  * Wrap an asynchronous function call in a group.
@@ -30901,9 +30901,11 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 function oxlintSuggestion(_a) {
     return src_awaiter(this, arguments, void 0, function* ({ directory, targets, oxlintBinPath, }) {
+        startGroup('Oxlint');
         changeDirectory(directory);
         const output = yield runOxlint({ oxlintBinPath, targets });
         parseOxlintOutput(output);
+        endGroup();
     });
 }
 function run() {
