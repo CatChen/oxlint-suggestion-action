@@ -54,6 +54,9 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
+  oxlint:
+    uses: ./.github/workflows/oxlint.yml
+
   codeql:
     uses: ./.github/workflows/codeql.yml
     permissions:
@@ -64,7 +67,7 @@ jobs:
 
   release:
     name: Release
-    needs: [build, test, codeql]
+    needs: [build, test, oxlint, codeql]
     concurrency: release
     runs-on: ubuntu-latest
     outputs:

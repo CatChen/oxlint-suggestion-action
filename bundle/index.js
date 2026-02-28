@@ -27822,6 +27822,18 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("util");
 /******/ }
 /******/ 
 /************************************************************************/
+/******/ /* webpack/runtime/compat get default export */
+/******/ (() => {
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__nccwpck_require__.n = (module) => {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			() => (module['default']) :
+/******/ 			() => (module);
+/******/ 		__nccwpck_require__.d(getter, { a: getter });
+/******/ 		return getter;
+/******/ 	};
+/******/ })();
+/******/ 
 /******/ /* webpack/runtime/define property getters */
 /******/ (() => {
 /******/ 	// define getter functions for harmony exports
@@ -30357,14 +30369,14 @@ var exec_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arg
  */
 function exec_exec(commandLine, args, options) {
     return exec_awaiter(this, void 0, void 0, function* () {
-        const commandArgs = tr.argStringToArray(commandLine);
+        const commandArgs = argStringToArray(commandLine);
         if (commandArgs.length === 0) {
             throw new Error(`Parameter 'commandLine' cannot be null or empty.`);
         }
         // Path to tool to execute should be first arg
         const toolPath = commandArgs[0];
         args = commandArgs.slice(1).concat(args || []);
-        const runner = new tr.ToolRunner(toolPath, args, options);
+        const runner = new ToolRunner(toolPath, args, options);
         return runner.exec();
     });
 }
@@ -30384,8 +30396,8 @@ function getExecOutput(commandLine, args, options) {
         let stdout = '';
         let stderr = '';
         //Using string decoder covers the case where a mult-byte character is split
-        const stdoutDecoder = new StringDecoder('utf8');
-        const stderrDecoder = new StringDecoder('utf8');
+        const stdoutDecoder = new external_string_decoder_.StringDecoder('utf8');
+        const stderrDecoder = new external_string_decoder_.StringDecoder('utf8');
         const originalStdoutListener = (_a = options === null || options === void 0 ? void 0 : options.listeners) === null || _a === void 0 ? void 0 : _a.stdout;
         const originalStdErrListener = (_b = options === null || options === void 0 ? void 0 : options.listeners) === null || _b === void 0 ? void 0 : _b.stderr;
         const stdErrListener = (data) => {
@@ -30709,7 +30721,7 @@ function notice(message, properties = {}) {
  * @param message info message
  */
 function info(message) {
-    process.stdout.write(message + os.EOL);
+    process.stdout.write(message + external_os_namespaceObject.EOL);
 }
 /**
  * Begin an output group.
@@ -30796,6 +30808,83 @@ function getIDToken(aud) {
  */
 
 //# sourceMappingURL=core.js.map
+;// CONCATENATED MODULE: external "node:path"
+const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
+var external_node_path_default = /*#__PURE__*/__nccwpck_require__.n(external_node_path_namespaceObject);
+;// CONCATENATED MODULE: external "node:process"
+const external_node_process_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:process");
+;// CONCATENATED MODULE: ./src/changeDirectory.ts
+
+
+
+const DEFAULT_WORKING_DIRECTORY = (0,external_node_process_namespaceObject.cwd)();
+function changeDirectory(directory) {
+    info(`Working directory is: ${DEFAULT_WORKING_DIRECTORY}`);
+    const absoluteDirectory = external_node_path_default().resolve(DEFAULT_WORKING_DIRECTORY, directory);
+    if (absoluteDirectory !== DEFAULT_WORKING_DIRECTORY) {
+        info(`Working directory is changed to: ${absoluteDirectory}`);
+        (0,external_node_process_namespaceObject.chdir)(absoluteDirectory);
+    }
+}
+
+;// CONCATENATED MODULE: ./src/parseOxlintOutput.ts
+
+function parseOxlintOutput(output) {
+    var _a, _b, _c, _d;
+    var _e;
+    const parsed = JSON.parse(output);
+    const indexedDiagnostics = {};
+    for (const diagnostic of parsed.diagnostics) {
+        (_a = indexedDiagnostics[_e = diagnostic.filename]) !== null && _a !== void 0 ? _a : (indexedDiagnostics[_e] = []);
+        (_b = indexedDiagnostics[diagnostic.filename]) === null || _b === void 0 ? void 0 : _b.push(diagnostic);
+    }
+    for (const [file, diagnostics] of Object.entries(indexedDiagnostics)) {
+        info(`File name: ${file}`);
+        for (const diagnostic of diagnostics) {
+            const line = (_d = (_c = diagnostic.labels[0]) === null || _c === void 0 ? void 0 : _c.span.line) !== null && _d !== void 0 ? _d : 1;
+            info(`  (${diagnostic.severity}) ${diagnostic.message} @ ${line}`);
+        }
+    }
+    return parsed;
+}
+
+;// CONCATENATED MODULE: external "node:fs"
+const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs");
+;// CONCATENATED MODULE: ./src/runOxlint.ts
+var runOxlint_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+
+function runOxlint(_a) {
+    return runOxlint_awaiter(this, arguments, void 0, function* ({ oxlintBinPath, targets, }) {
+        const args = [
+            ...targets
+                .split(/\s+/)
+                .map((target) => target.trim())
+                .filter((target) => target.length > 0),
+            '--format=json',
+        ];
+        const resolvedOxlintBinPath = (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), oxlintBinPath);
+        if (!(0,external_node_fs_namespaceObject.existsSync)(resolvedOxlintBinPath)) {
+            throw new Error(`Oxlint binary cannot be found at ${resolvedOxlintBinPath}`);
+        }
+        const oxlintOutput = yield getExecOutput(resolvedOxlintBinPath, args, {
+            ignoreReturnCode: true,
+            silent: true,
+        });
+        return oxlintOutput.stdout;
+    });
+}
+
 ;// CONCATENATED MODULE: ./src/index.ts
 var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -30807,8 +30896,15 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
     });
 };
 
-function oxlintSuggestion(_inputs) {
-    return src_awaiter(this, void 0, void 0, function* () { });
+
+
+
+function oxlintSuggestion(_a) {
+    return src_awaiter(this, arguments, void 0, function* ({ directory, targets, oxlintBinPath, }) {
+        changeDirectory(directory);
+        const output = yield runOxlint({ oxlintBinPath, targets });
+        parseOxlintOutput(output);
+    });
 }
 function run() {
     return src_awaiter(this, void 0, void 0, function* () {

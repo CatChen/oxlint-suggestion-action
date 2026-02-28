@@ -1,23 +1,24 @@
-name: Test
+name: Oxlint
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main, '[0-9]+-[0-9]+-*']
-  workflow_dispatch:
   workflow_run:
     workflows: ['Dependabot']
-    branches-ignore: ['workflows/tests/*']
+    branches: ['dependabot/**/*']
     types:
       - completed
+  workflow_dispatch:
   workflow_call:
 
 jobs:
-  test:
-    name: Test
+  oxlint:
+    name: Oxlint
     if: ${{ !startsWith(github.head_ref || github.event.workflow_run.head_branch, 'workflows/tests/') }}
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v6
 
@@ -30,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Test
-        uses: ./
+      - uses: ./
         with:
-          targets: 'tests'
+          targets: 'src'
+          fail-check: ${{ github.event_name == 'workflow_call' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
