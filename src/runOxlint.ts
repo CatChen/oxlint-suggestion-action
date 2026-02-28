@@ -9,10 +9,12 @@ export async function runOxlint({
   oxlintBinPath,
   directory,
   targets,
+  configPath,
 }: {
   oxlintBinPath: string;
   directory: string;
   targets: string;
+  configPath: string;
 }): Promise<string> {
   const resolvedOxlintBinPath = resolve(cwd(), oxlintBinPath);
   if (!existsSync(resolvedOxlintBinPath)) {
@@ -21,14 +23,20 @@ export async function runOxlint({
     );
   }
 
-  const oxlintOutput = await getExecOutput(
-    resolvedOxlintBinPath,
-    [...globSync(join(directory, targets)), '--format=json'],
-    {
-      ignoreReturnCode: true,
-      silent: true,
-    },
-  );
+  const resolvedConfigPath = configPath ? resolve(cwd(), configPath) : null;
+  if (resolvedConfigPath && !existsSync(resolvedConfigPath)) {
+    throw new Error(`Oxlint config cannot be found at ${resolvedConfigPath}`);
+  }
+
+  const args = [...globSync(join(directory, targets)), '--format=json'];
+  if (resolvedConfigPath) {
+    args.push(`--config=${resolvedConfigPath}`);
+  }
+
+  const oxlintOutput = await getExecOutput(resolvedOxlintBinPath, args, {
+    ignoreReturnCode: true,
+    silent: true,
+  });
 
   return oxlintOutput.stdout;
 }
