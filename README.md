@@ -12,7 +12,9 @@ This GitHub Action runs Oxlint and provides inline feedback on the changes in a 
 
 ## Examples
 
-Screenshots will be added later.
+When there is any Oxlint warning or error, this action will leave a comment:
+
+![example-screenshot](https://github.com/user-attachments/assets/e1f9dd35-1768-477f-b769-a936e7066940)
 
 ## Usage
 
