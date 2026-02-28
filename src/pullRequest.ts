@@ -76,8 +76,9 @@ async function getReviewComments(
   return relevantReviewComments;
 }
 
-function getDiagnosticLine(diagnostic: OxlintDiagnostic) {
-  return diagnostic.labels[0]?.span.line ?? 1;
+function getDiagnosticLines(diagnostic: OxlintDiagnostic) {
+  const lines = diagnostic.labels.map((label) => label.span.line);
+  return [...new Set(lines)];
 }
 
 function getReviewCommentFromDiagnostic(
@@ -87,7 +88,7 @@ function getReviewCommentFromDiagnostic(
 ): ReviewComment {
   const ruleInfo = diagnostic.code
     ? diagnostic.url
-      ? `[${diagnostic.code}](${diagnostic.url})`
+      ? `[\`${diagnostic.code}\`](${diagnostic.url})`
       : `\`${diagnostic.code}\``
     : '';
   const trailingRuleInfo = ruleInfo ? ` ${ruleInfo}` : '';
@@ -167,27 +168,29 @@ export async function handlePullRequest(
     const indexedModifiedLines = getIndexedModifiedLines(file);
     const fileDiagnostics = indexedDiagnostics[file.filename] ?? [];
     for (const diagnostic of fileDiagnostics) {
-      const line = getDiagnosticLine(diagnostic);
-      if (indexedModifiedLines[line]) {
-        const reviewComment = getReviewCommentFromDiagnostic(
-          diagnostic,
-          line,
-          file.filename,
-        );
-        const matchedComments = matchReviewComments(
-          existingReviewComments,
-          reviewComment,
-        );
-        commentsCounter++;
-        if (matchedComments.length === 0) {
-          reviewComments.push(reviewComment);
-          info(`    Comment queued @ ${line}`);
+      const lines = getDiagnosticLines(diagnostic);
+      for (const line of lines) {
+        if (indexedModifiedLines[line]) {
+          const reviewComment = getReviewCommentFromDiagnostic(
+            diagnostic,
+            line,
+            file.filename,
+          );
+          const matchedComments = matchReviewComments(
+            existingReviewComments,
+            reviewComment,
+          );
+          commentsCounter++;
+          if (matchedComments.length === 0) {
+            reviewComments.push(reviewComment);
+            info(`    Comment queued @ ${line}`);
+          } else {
+            info(`    Comment skipped @ ${line}`);
+          }
         } else {
-          info(`    Comment skipped @ ${line}`);
+          outOfScopeResultsCounter++;
+          info(`  Out of scope line: ${line}`);
         }
-      } else {
-        outOfScopeResultsCounter++;
-        info(`  Out of scope line: ${line}`);
       }
     }
   }

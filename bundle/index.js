@@ -38128,14 +38128,14 @@ function getReviewComments(octokit, owner, repo, pullRequestNumber) {
         return relevantReviewComments;
     });
 }
-function getDiagnosticLine(diagnostic) {
-    var _a, _b;
-    return (_b = (_a = diagnostic.labels[0]) === null || _a === void 0 ? void 0 : _a.span.line) !== null && _b !== void 0 ? _b : 1;
+function getDiagnosticLines(diagnostic) {
+    const lines = diagnostic.labels.map((label) => label.span.line);
+    return [...new Set(lines)];
 }
 function getReviewCommentFromDiagnostic(diagnostic, line, path) {
     const ruleInfo = diagnostic.code
         ? diagnostic.url
-            ? `[${diagnostic.code}](${diagnostic.url})`
+            ? `[\`${diagnostic.code}\`](${diagnostic.url})`
             : `\`${diagnostic.code}\``
         : '';
     const trailingRuleInfo = ruleInfo ? ` ${ruleInfo}` : '';
@@ -38182,22 +38182,24 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
             const indexedModifiedLines = getIndexedModifiedLines(file);
             const fileDiagnostics = (_c = indexedDiagnostics[file.filename]) !== null && _c !== void 0 ? _c : [];
             for (const diagnostic of fileDiagnostics) {
-                const line = getDiagnosticLine(diagnostic);
-                if (indexedModifiedLines[line]) {
-                    const reviewComment = getReviewCommentFromDiagnostic(diagnostic, line, file.filename);
-                    const matchedComments = matchReviewComments(existingReviewComments, reviewComment);
-                    commentsCounter++;
-                    if (matchedComments.length === 0) {
-                        reviewComments.push(reviewComment);
-                        info(`    Comment queued @ ${line}`);
+                const lines = getDiagnosticLines(diagnostic);
+                for (const line of lines) {
+                    if (indexedModifiedLines[line]) {
+                        const reviewComment = getReviewCommentFromDiagnostic(diagnostic, line, file.filename);
+                        const matchedComments = matchReviewComments(existingReviewComments, reviewComment);
+                        commentsCounter++;
+                        if (matchedComments.length === 0) {
+                            reviewComments.push(reviewComment);
+                            info(`    Comment queued @ ${line}`);
+                        }
+                        else {
+                            info(`    Comment skipped @ ${line}`);
+                        }
                     }
                     else {
-                        info(`    Comment skipped @ ${line}`);
+                        outOfScopeResultsCounter++;
+                        info(`  Out of scope line: ${line}`);
                     }
-                }
-                else {
-                    outOfScopeResultsCounter++;
-                    info(`  Out of scope line: ${line}`);
                 }
             }
         }
