@@ -38210,21 +38210,19 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
         endGroup();
         startGroup('Feedback');
         if (commentsCounter > 0) {
-            if (reviewComments.length > 0) {
-                try {
-                    yield octokit.rest.pulls.createReview({
-                        owner,
-                        repo,
-                        body: REVIEW_BODY,
-                        pull_number: pullRequestNumber,
-                        commit_id: headSha,
-                        event: requestChanges ? 'REQUEST_CHANGES' : 'COMMENT',
-                        comments: reviewComments,
-                    });
-                }
-                catch (_e) {
-                    throw new Error(`Failed to create review with ${reviewComments.length} comment(s).`);
-                }
+            try {
+                yield octokit.rest.pulls.createReview({
+                    owner,
+                    repo,
+                    body: REVIEW_BODY,
+                    pull_number: pullRequestNumber,
+                    commit_id: headSha,
+                    event: requestChanges ? 'REQUEST_CHANGES' : 'COMMENT',
+                    comments: reviewComments,
+                });
+            }
+            catch (_e) {
+                throw new Error(`Failed to create review with ${reviewComments.length} comment(s).`);
             }
             if (commentsCounter - reviewComments.length > 0) {
                 info(`Review comments existed and skipped: ${commentsCounter - reviewComments.length}`);

@@ -203,22 +203,20 @@ export async function handlePullRequest(
 
   startGroup('Feedback');
   if (commentsCounter > 0) {
-    if (reviewComments.length > 0) {
-      try {
-        await octokit.rest.pulls.createReview({
-          owner,
-          repo,
-          body: REVIEW_BODY,
-          pull_number: pullRequestNumber,
-          commit_id: headSha,
-          event: requestChanges ? 'REQUEST_CHANGES' : 'COMMENT',
-          comments: reviewComments,
-        });
-      } catch {
-        throw new Error(
-          `Failed to create review with ${reviewComments.length} comment(s).`,
-        );
-      }
+    try {
+      await octokit.rest.pulls.createReview({
+        owner,
+        repo,
+        body: REVIEW_BODY,
+        pull_number: pullRequestNumber,
+        commit_id: headSha,
+        event: requestChanges ? 'REQUEST_CHANGES' : 'COMMENT',
+        comments: reviewComments,
+      });
+    } catch {
+      throw new Error(
+        `Failed to create review with ${reviewComments.length} comment(s).`,
+      );
     }
     if (commentsCounter - reviewComments.length > 0) {
       info(
