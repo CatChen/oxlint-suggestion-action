@@ -32,6 +32,7 @@ jobs:
         uses: ./
         with:
           targets: src/__tests__/*.js
+          config-path: '.oxlintrc.json'
 
       - name: Verify
         run: |

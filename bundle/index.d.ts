@@ -1,4 +1,4 @@
-export declare function oxlintSuggestion({ directory, targets, oxlintBinPath, }: {
+export declare function oxlintSuggestion({ directory, targets, oxlintBinPath, configPath, }: {
     requestChanges: boolean;
     failCheck: boolean;
     githubToken: string;
