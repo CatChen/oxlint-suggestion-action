@@ -1,11 +1,95 @@
-# Typescript GitHub Action Template
+# oxlint-suggestion-action
 
-A template to create custom GitHub Action with TypeScript/JavaScript.
+[![Build](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/build.yml)
+[![Test](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/test.yml/badge.svg?branch=main&event=push)](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/test.yml)
+[![Oxlint](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/oxlint.yml/badge.svg?branch=main&event=push)](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/oxlint.yml)
+[![CodeQL](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/codeql.yml/badge.svg?branch=main&event=schedule)](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/codeql.yml)
 
-## Secrets
+This GitHub Action runs Oxlint and provides inline feedback on the changes in a pull request. Features:
 
-The following secrets need to be set up before you can use workflows already defined in this template:
+1. It posts review comments for Oxlint diagnostics on modified lines.
+2. It only provides feedback for lines changed in the pull request, so pre-existing issues outside the diff do not add noise.
 
-- **`CHECK_GIT_STATUS_BOT_APP_ID`** and **`CHECK_GIT_STATUS_BOT_APP_PRIVATE_KEY`**: Used by the [`Build` workflow](https://github.com/CatChen/oxlint-suggestion-action/blob/main/.github/workflows/build.yml). If you don't want to set up a bot you can remove the `actions/create-github-app-token` step and remove all references to `steps.get-github-app-token.outputs.token`.
-- **`ACCEPT_TO_SHIP_BOT_APP_ID`** and **`ACCEPT_TO_SHIP_BOT_APP_PRIVATE_KEY`**: Used by the [`Ship` workflow](https://github.com/CatChen/oxlint-suggestion-action/blob/main/.github/workflows/ship.yml). If you don't want to set up a bot you can remove the two `actions/create-github-app-token` steps and remove all references to `steps.get-github-app-token.outputs.token`.
-- **`NPM_TOKEN`**: Used by the [`Release` workflow](https://github.com/CatChen/oxlint-suggestion-action/blob/main/.github/workflows/release.yml). This is necessary for publishing the NPM package to NPM. If you don't want to publish to NPM you can remove the `publish` job.
+## Examples
+
+Screenshots will be added later.
+
+## Usage
+
+Set up a GitHub Action like this:
+
+```yaml
+name: Oxlint
+
+on:
+  push:
+    branches: [main] # or [master] if that's the name of the main branch
+  pull_request:
+    branches: [main] # or [master] if that's the name of the main branch
+
+jobs:
+  oxlint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          check-latest: true
+
+      - name: Install dependencies
+        run: yarn install # or npm ci if you use npm and have package-lock.json
+
+      - uses: CatChen/oxlint-suggestion-action@main
+        with:
+          request-changes: true # optional
+          fail-check: false # optional
+          github-token: ${{ secrets.GITHUB_TOKEN }} # optional
+          directory: './' # optional
+          targets: '.' # optional
+          oxlint-bin-path: './node_modules/.bin/oxlint' # optional
+          config-path: '' # optional
+```
+
+Save the file to `.github/workflows/oxlint.yml`. It will start working on new pull requests.
+
+## Options
+
+### `request-changes`
+
+This option determines whether this GitHub Action should request changes if Oxlint does not pass. This option has no effect when the workflow is not triggered by a `pull_request` event. The default value is `true`.
+
+### `fail-check`
+
+This option determines whether the GitHub workflow should fail if Oxlint does not pass. The default value is `false`.
+
+### `github-token`
+
+The default value is `${{ github.token }}`, which is the GitHub token generated for this workflow. You can [create a different token with a different set of permissions](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) and use it here as well.
+
+### `directory`
+
+The default value is `'./'`. This action runs Oxlint from this directory.
+
+### `targets`
+
+The default value is `'.'`. For example, it could be `'src'` or `'src/**/*.ts'` for a typical TypeScript project. You can use glob patterns to match multiple directories, for example `'{src,lib}'`.
+
+### `oxlint-bin-path`
+
+The default value is `'./node_modules/.bin/oxlint'`. This action uses the Oxlint binary from this path.
+
+### `config-path`
+
+The default value is an empty string. Oxlint's default config discovery is used when this value is empty. If your config file is in a non-default location, set this option.
+
+## FAQ
+
+### Can I have GitHub suggestions outside of the scope?
+
+No, mostly not. GitHub only allows review comments inside diff hunks (changed lines and a small surrounding context). For consistency, this action only comments on changed lines in the pull request.
+
+### How can I avoid having annotations in generated code inside a project?
+
+Follow [GitHub's documentation](https://github.com/github/linguist/blob/master/docs/overrides.md#generated-code) and use `.gitattributes` to mark generated files and directories correctly. GitHub will hide those files in pull requests.
