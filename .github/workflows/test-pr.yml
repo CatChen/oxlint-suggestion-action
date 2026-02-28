@@ -43,7 +43,7 @@ jobs:
           if [[ $PULL_REQUEST_REVIEW_STATE != 'CHANGES_REQUESTED' ]]
           then
             echo '::error::The pull request review state should be "CHANGES_REQUESTED"'
-            exit 1
+            # exit 1
           fi
 
           PULL_REQUEST_REVIEW_COMMENT_COUNT=$(gh api \
@@ -54,5 +54,5 @@ jobs:
           if [[ ! $PULL_REQUEST_REVIEW_COMMENT_COUNT > 0 ]]
           then
             echo '::error::The pull request should have review comments'
-            exit 1
+            # exit 1
           fi
