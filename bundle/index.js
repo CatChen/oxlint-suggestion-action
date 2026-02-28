@@ -30924,12 +30924,20 @@ var runOxlint_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 function runOxlint(_a) {
-    return runOxlint_awaiter(this, arguments, void 0, function* ({ oxlintBinPath, directory, targets, }) {
+    return runOxlint_awaiter(this, arguments, void 0, function* ({ oxlintBinPath, directory, targets, configPath, }) {
         const resolvedOxlintBinPath = (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), oxlintBinPath);
         if (!(0,external_node_fs_namespaceObject.existsSync)(resolvedOxlintBinPath)) {
             throw new Error(`Oxlint binary cannot be found at ${resolvedOxlintBinPath}`);
         }
-        const oxlintOutput = yield getExecOutput(resolvedOxlintBinPath, [...ts((0,external_node_path_namespaceObject.join)(directory, targets)), '--format=json'], {
+        const resolvedConfigPath = configPath ? (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), configPath) : null;
+        if (resolvedConfigPath && !(0,external_node_fs_namespaceObject.existsSync)(resolvedConfigPath)) {
+            throw new Error(`Oxlint config cannot be found at ${resolvedConfigPath}`);
+        }
+        const args = [...ts((0,external_node_path_namespaceObject.join)(directory, targets)), '--format=json'];
+        if (resolvedConfigPath) {
+            args.push(`--config=${resolvedConfigPath}`);
+        }
+        const oxlintOutput = yield getExecOutput(resolvedOxlintBinPath, args, {
             ignoreReturnCode: true,
             silent: true,
         });
@@ -30952,10 +30960,15 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 function oxlintSuggestion(_a) {
-    return src_awaiter(this, arguments, void 0, function* ({ directory, targets, oxlintBinPath, }) {
+    return src_awaiter(this, arguments, void 0, function* ({ directory, targets, oxlintBinPath, configPath, }) {
         startGroup('Oxlint');
         changeDirectory(directory);
-        const output = yield runOxlint({ oxlintBinPath, directory, targets });
+        const output = yield runOxlint({
+            oxlintBinPath,
+            directory,
+            targets,
+            configPath,
+        });
         parseOxlintOutput(output);
         endGroup();
     });
