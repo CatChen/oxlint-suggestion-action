@@ -1,6 +1,5 @@
-export declare function runOxlint({ oxlintBinPath, directory, targets, configPath, }: {
+export declare function runOxlint({ oxlintBinPath, targets, configPath, }: {
     oxlintBinPath: string;
-    directory: string;
     targets: string;
     configPath: string;
 }): Promise<string>;

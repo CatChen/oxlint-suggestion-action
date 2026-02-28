@@ -28,7 +28,6 @@ export async function oxlintSuggestion({
   changeDirectory(directory);
   const output = await runOxlint({
     oxlintBinPath,
-    directory,
     targets,
     configPath,
   });

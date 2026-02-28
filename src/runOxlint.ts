@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { cwd } from 'node:process';
 
 import { notice } from '@actions/core';
@@ -8,12 +8,10 @@ import { globSync } from 'glob';
 
 export async function runOxlint({
   oxlintBinPath,
-  directory,
   targets,
   configPath,
 }: {
   oxlintBinPath: string;
-  directory: string;
   targets: string;
   configPath: string;
 }): Promise<string> {
@@ -25,7 +23,7 @@ export async function runOxlint({
   }
   notice(`Using Oxlint from: ${absoluteOxlintBinPath}`);
 
-  const args = [...globSync(join(directory, targets)), '--format=json'];
+  const args = [...globSync(targets), '--format=json'];
 
   const absoluteConfigPath = configPath ? resolve(cwd(), configPath) : null;
   if (absoluteConfigPath) {

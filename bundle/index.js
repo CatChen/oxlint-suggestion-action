@@ -30925,13 +30925,13 @@ var runOxlint_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 function runOxlint(_a) {
-    return runOxlint_awaiter(this, arguments, void 0, function* ({ oxlintBinPath, directory, targets, configPath, }) {
+    return runOxlint_awaiter(this, arguments, void 0, function* ({ oxlintBinPath, targets, configPath, }) {
         const absoluteOxlintBinPath = (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), oxlintBinPath);
         if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteOxlintBinPath)) {
             throw new Error(`Oxlint binary cannot be found at ${absoluteOxlintBinPath}`);
         }
         notice(`Using Oxlint from: ${absoluteOxlintBinPath}`);
-        const args = [...ts((0,external_node_path_namespaceObject.join)(directory, targets)), '--format=json'];
+        const args = [...ts(targets), '--format=json'];
         const absoluteConfigPath = configPath ? (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), configPath) : null;
         if (absoluteConfigPath) {
             if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteConfigPath)) {
@@ -30968,7 +30968,6 @@ function oxlintSuggestion(_a) {
         changeDirectory(directory);
         const output = yield runOxlint({
             oxlintBinPath,
-            directory,
             targets,
             configPath,
         });
