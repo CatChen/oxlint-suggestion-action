@@ -38036,6 +38036,70 @@ function parseOxlintOutput(output) {
     return parsed;
 }
 
+;// CONCATENATED MODULE: ./src/__graphql__/graphql.ts
+class TypedDocumentString extends String {
+    constructor(value, __meta__) {
+        super(value);
+        this.value = value;
+        this.__meta__ = __meta__;
+    }
+    toString() {
+        return this.value;
+    }
+}
+const ReviewThreadsDocument = new TypedDocumentString(`
+    query ReviewThreads($owner: String!, $repo: String!, $pullRequestNumber: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pullRequestNumber) {
+      reviewThreads(last: 100) {
+        totalCount
+        nodes {
+          id
+          isResolved
+          comments(last: 100) {
+            totalCount
+            nodes {
+              id
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    `);
+const ResolveReviewThreadDocument = new TypedDocumentString(`
+    mutation ResolveReviewThread($nodeId: ID!) {
+  resolveReviewThread(input: {threadId: $nodeId}) {
+    thread {
+      id
+    }
+  }
+}
+    `);
+const UnresolveReviewThreadDocument = new TypedDocumentString(`
+    mutation UnresolveReviewThread($nodeId: ID!) {
+  unresolveReviewThread(input: {threadId: $nodeId}) {
+    thread {
+      id
+    }
+  }
+}
+    `);
+
+;// CONCATENATED MODULE: ./src/__graphql__/gql.ts
+/* eslint-disable */
+
+const documents = {
+    '\n  query ReviewThreads(\n    $owner: String!\n    $repo: String!\n    $pullRequestNumber: Int!\n  ) {\n    repository(owner: $owner, name: $repo) {\n      pullRequest(number: $pullRequestNumber) {\n        reviewThreads(last: 100) {\n          totalCount\n          nodes {\n            id\n            isResolved\n            comments(last: 100) {\n              totalCount\n              nodes {\n                id\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': ReviewThreadsDocument,
+    '\n  mutation ResolveReviewThread($nodeId: ID!) {\n    resolveReviewThread(input: { threadId: $nodeId }) {\n      thread {\n        id\n      }\n    }\n  }\n': ResolveReviewThreadDocument,
+    '\n  mutation UnresolveReviewThread($nodeId: ID!) {\n    unresolveReviewThread(input: { threadId: $nodeId }) {\n      thread {\n        id\n      }\n    }\n  }\n': UnresolveReviewThreadDocument,
+};
+function gql_graphql(source) {
+    var _a;
+    return (_a = documents[source]) !== null && _a !== void 0 ? _a : {};
+}
+
 ;// CONCATENATED MODULE: ./src/getIndexedModifiedLines.ts
 
 const HUNK_HEADER_PATTERN = /^@@ -\d+(,\d+)? \+(\d+)(,(\d+))? @@/;
@@ -38091,8 +38155,52 @@ var pullRequest_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 };
 
 
+
 const REVIEW_BODY = "Oxlint doesn't pass. Please fix all Oxlint issues.";
 const GITHUB_ACTIONS_BOT_ID = 41898282;
+const getReviewThreadsQuery = gql_graphql(`
+  query ReviewThreads(
+    $owner: String!
+    $repo: String!
+    $pullRequestNumber: Int!
+  ) {
+    repository(owner: $owner, name: $repo) {
+      pullRequest(number: $pullRequestNumber) {
+        reviewThreads(last: 100) {
+          totalCount
+          nodes {
+            id
+            isResolved
+            comments(last: 100) {
+              totalCount
+              nodes {
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+const resolveReviewThreadMutation = gql_graphql(`
+  mutation ResolveReviewThread($nodeId: ID!) {
+    resolveReviewThread(input: { threadId: $nodeId }) {
+      thread {
+        id
+      }
+    }
+  }
+`);
+const unresolveReviewThreadMutation = gql_graphql(`
+  mutation UnresolveReviewThread($nodeId: ID!) {
+    unresolveReviewThread(input: { threadId: $nodeId }) {
+      thread {
+        id
+      }
+    }
+  }
+`);
 function getPullRequestFiles(octokit, owner, repo, pullRequestNumber) {
     return pullRequest_awaiter(this, void 0, void 0, function* () {
         const files = yield octokit.paginate(octokit.rest.pulls.listFiles, {
@@ -38126,6 +38234,58 @@ function getReviewComments(octokit, owner, repo, pullRequestNumber) {
             relevantReviewIds.includes(reviewComment.pull_request_review_id));
         info(`Existing review comments: (${relevantReviewComments.length})`);
         return relevantReviewComments;
+    });
+}
+function getReviewThreads(octokit, owner, repo, pullRequestNumber) {
+    return pullRequest_awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        const commentNodeIdToReviewThreadMapping = {};
+        const queryData = yield octokit.graphql(getReviewThreadsQuery.toString(), {
+            owner,
+            repo,
+            pullRequestNumber,
+        });
+        const reviewThreadTotalCount = (_c = (_b = (_a = queryData === null || queryData === void 0 ? void 0 : queryData.repository) === null || _a === void 0 ? void 0 : _a.pullRequest) === null || _b === void 0 ? void 0 : _b.reviewThreads) === null || _c === void 0 ? void 0 : _c.totalCount;
+        if (reviewThreadTotalCount !== undefined && reviewThreadTotalCount > 100) {
+            error(`There are more than 100 review threads: ${reviewThreadTotalCount}`);
+        }
+        const reviewThreads = (_f = (_e = (_d = queryData === null || queryData === void 0 ? void 0 : queryData.repository) === null || _d === void 0 ? void 0 : _d.pullRequest) === null || _e === void 0 ? void 0 : _e.reviewThreads) === null || _f === void 0 ? void 0 : _f.nodes;
+        if (reviewThreads !== undefined && reviewThreads !== null) {
+            for (const reviewThread of reviewThreads) {
+                if (reviewThread === null) {
+                    continue;
+                }
+                const commentTotalCount = (_g = reviewThread === null || reviewThread === void 0 ? void 0 : reviewThread.comments) === null || _g === void 0 ? void 0 : _g.totalCount;
+                if (commentTotalCount !== undefined && commentTotalCount > 100) {
+                    error(`There are more than 100 review comments in review thread ${reviewThread === null || reviewThread === void 0 ? void 0 : reviewThread.id}: ${commentTotalCount}`);
+                }
+                const comments = (_h = reviewThread === null || reviewThread === void 0 ? void 0 : reviewThread.comments) === null || _h === void 0 ? void 0 : _h.nodes;
+                if (comments !== undefined && comments !== null) {
+                    for (const comment of comments) {
+                        const commentId = comment === null || comment === void 0 ? void 0 : comment.id;
+                        if (commentId === undefined || commentId === null) {
+                            continue;
+                        }
+                        commentNodeIdToReviewThreadMapping[commentId] = reviewThread;
+                    }
+                }
+            }
+        }
+        return commentNodeIdToReviewThreadMapping;
+    });
+}
+function resolveReviewThread(octokit, nodeId) {
+    return pullRequest_awaiter(this, void 0, void 0, function* () {
+        yield octokit.graphql(resolveReviewThreadMutation.toString(), {
+            nodeId,
+        });
+    });
+}
+function unresolveReviewThread(octokit, nodeId) {
+    return pullRequest_awaiter(this, void 0, void 0, function* () {
+        yield octokit.graphql(unresolveReviewThreadMutation.toString(), {
+            nodeId,
+        });
     });
 }
 function getDiagnosticLines(diagnostic) {
@@ -38165,6 +38325,7 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
         startGroup('GitHub Pull Request');
         const files = yield getPullRequestFiles(octokit, owner, repo, pullRequestNumber);
         const existingReviewComments = yield getReviewComments(octokit, owner, repo, pullRequestNumber);
+        const commentNodeIdToReviewThreadMapping = yield getReviewThreads(octokit, owner, repo, pullRequestNumber);
         const indexedDiagnostics = {};
         for (const diagnostic of diagnostics) {
             (_a = indexedDiagnostics[_d = diagnostic.filename]) !== null && _a !== void 0 ? _a : (indexedDiagnostics[_d] = []);
@@ -38173,6 +38334,7 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
         let commentsCounter = 0;
         let outOfScopeResultsCounter = 0;
         const reviewComments = [];
+        let matchedReviewCommentNodeIds = {};
         for (const file of files) {
             info(`  File name: ${file.filename}`);
             info(`  File status: ${file.status}`);
@@ -38194,6 +38356,7 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
                             info(`    Comment queued`);
                         }
                         else {
+                            matchedReviewCommentNodeIds = Object.assign(Object.assign({}, matchedReviewCommentNodeIds), Object.fromEntries(matchedComments.map((nodeId) => [nodeId, true])));
                             info(`    Comment skipped`);
                         }
                     }
@@ -38204,11 +38367,32 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
                 }
             }
         }
+        endGroup();
+        startGroup('Feedback');
+        for (const reviewComment of existingReviewComments) {
+            const reviewThread = commentNodeIdToReviewThreadMapping[reviewComment.node_id];
+            if (reviewThread !== undefined) {
+                if (matchedReviewCommentNodeIds[reviewComment.node_id] &&
+                    reviewThread.isResolved) {
+                    yield unresolveReviewThread(octokit, reviewThread.id);
+                    info(`Review comment unresolved: ${reviewComment.url}`);
+                }
+                else if (!matchedReviewCommentNodeIds[reviewComment.node_id] &&
+                    !reviewThread.isResolved) {
+                    yield resolveReviewThread(octokit, reviewThread.id);
+                    info(`Review comment resolved: ${reviewComment.url}`);
+                }
+                else {
+                    info(`Review comment remains ${reviewThread.isResolved ? 'resolved' : 'unresolved'}: ${reviewComment.url}`);
+                }
+            }
+            else {
+                error(`Review comment has no associated review thread: ${reviewComment.url}`);
+            }
+        }
         if (outOfScopeResultsCounter > 0) {
             info(`Out of scope results: ${outOfScopeResultsCounter}`);
         }
-        endGroup();
-        startGroup('Feedback');
         if (commentsCounter > 0) {
             try {
                 yield octokit.rest.pulls.createReview({
