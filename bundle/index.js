@@ -30476,7 +30476,7 @@ function utils_toCommandValue(input) {
  * @returns The command properties to send with the actual annotation command
  * See IssueCommandProperties: https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionCommandManager.cs#L646
  */
-function utils_toCommandProperties(annotationProperties) {
+function toCommandProperties(annotationProperties) {
     if (!Object.keys(annotationProperties).length) {
         return {};
     }
@@ -33287,7 +33287,7 @@ function core_debug(message) {
  * @param properties optional properties to add to the annotation.
  */
 function error(message, properties = {}) {
-    command_issueCommand('error', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('error', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a warning issue
@@ -33295,7 +33295,7 @@ function error(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function warning(message, properties = {}) {
-    issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a notice issue
@@ -33303,7 +33303,7 @@ function warning(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function notice(message, properties = {}) {
-    command_issueCommand('notice', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('notice', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Writes info to log with console.log.
@@ -38015,6 +38015,27 @@ function getPullRequestMetadata() {
     };
 }
 
+;// CONCATENATED MODULE: ./src/getPushMetadata.ts
+
+
+function getPushMetadata() {
+    const push = github_context.payload;
+    const owner = github_context.repo.owner;
+    const repo = github_context.repo.repo;
+    const beforeSha = push.before;
+    const afterSha = push.after;
+    info(`Owner: ${owner}`);
+    info(`Repo: ${repo}`);
+    info(`Before SHA: ${beforeSha}`);
+    info(`After SHA: ${afterSha}`);
+    return {
+        owner,
+        repo,
+        beforeSha,
+        afterSha,
+    };
+}
+
 ;// CONCATENATED MODULE: ./src/parseOxlintOutput.ts
 
 function parseOxlintOutput(output) {
@@ -38428,6 +38449,112 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
     });
 }
 
+;// CONCATENATED MODULE: ./src/push.ts
+var push_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+function getPushFiles(octokit, owner, repo, beforeSha, afterSha) {
+    return push_awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
+        const response = yield octokit.rest.repos.compareCommitsWithBasehead({
+            owner,
+            repo,
+            basehead: `${beforeSha}...${afterSha}`,
+        });
+        info(`Files: (${(_b = (_a = response.data.files) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0})`);
+        return response.data.files;
+    });
+}
+function push_getDiagnosticLines(diagnostic) {
+    const lines = diagnostic.labels.map((label) => label.span.line);
+    return [...new Set(lines)];
+}
+function getDiagnosticMessage(diagnostic) {
+    const ruleInfo = diagnostic.code
+        ? diagnostic.url
+            ? `[${diagnostic.code}](${diagnostic.url})`
+            : diagnostic.code
+        : '';
+    return ruleInfo ? `${diagnostic.message}: ${ruleInfo}` : diagnostic.message;
+}
+function handlePush(octokit, diagnostics, owner, repo, beforeSha, afterSha, failCheck) {
+    return push_awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
+        var _c;
+        startGroup('GitHub Push');
+        const files = yield getPushFiles(octokit, owner, repo, beforeSha, afterSha);
+        if (files === undefined || files.length === 0) {
+            info(`Push contains no files`);
+            endGroup();
+            return;
+        }
+        const indexedDiagnostics = {};
+        for (const diagnostic of diagnostics) {
+            (_a = indexedDiagnostics[_c = diagnostic.filename]) !== null && _a !== void 0 ? _a : (indexedDiagnostics[_c] = []);
+            (_b = indexedDiagnostics[diagnostic.filename]) === null || _b === void 0 ? void 0 : _b.push(diagnostic);
+        }
+        let warningCounter = 0;
+        let errorCounter = 0;
+        for (const file of files) {
+            info(`  File name: ${file.filename}`);
+            info(`  File status: ${file.status}`);
+            if (file.status === 'removed') {
+                continue;
+            }
+            const indexedModifiedLines = getIndexedModifiedLines(file);
+            const fileDiagnostics = indexedDiagnostics[file.filename];
+            if (fileDiagnostics) {
+                for (const diagnostic of fileDiagnostics) {
+                    const lines = push_getDiagnosticLines(diagnostic);
+                    for (const line of lines) {
+                        if (indexedModifiedLines[line]) {
+                            info(`  Matched line: ${line}`);
+                            switch (diagnostic.severity) {
+                                case 'warning':
+                                    warning(getDiagnosticMessage(diagnostic), {
+                                        file: file.filename,
+                                        startLine: line,
+                                    });
+                                    warningCounter++;
+                                    break;
+                                case 'error':
+                                    error(getDiagnosticMessage(diagnostic), {
+                                        file: file.filename,
+                                        startLine: line,
+                                    });
+                                    errorCounter++;
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        endGroup();
+        startGroup('Feedback');
+        if (warningCounter > 0 || errorCounter > 0) {
+            if (failCheck) {
+                throw new Error('Oxlint fails. Please review comments.');
+            }
+            else {
+                error('Oxlint fails');
+            }
+        }
+        else {
+            notice('Oxlint passes');
+        }
+        endGroup();
+    });
+}
+
 ;// CONCATENATED MODULE: external "node:fs"
 const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs");
 var external_node_fs_namespaceObject_0 = /*#__PURE__*/__nccwpck_require__.t(external_node_fs_namespaceObject, 2);
@@ -38505,6 +38632,8 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 
+
+
 function oxlintSuggestion(_a) {
     return src_awaiter(this, arguments, void 0, function* ({ requestChanges, failCheck, githubToken, directory, targets, oxlintBinPath, configPath, }) {
         startGroup('Oxlint');
@@ -38516,14 +38645,20 @@ function oxlintSuggestion(_a) {
         });
         const parsedOutput = parseOxlintOutput(output);
         endGroup();
+        const octokit = getOctokit_getOctokit(githubToken);
         info(`Event name: ${github_context.eventName}`);
         switch (github_context.eventName) {
             case 'pull_request':
             case 'pull_request_target':
                 yield (() => src_awaiter(this, void 0, void 0, function* () {
-                    const octokit = getOctokit_getOctokit(githubToken);
                     const { owner, repo, pullRequestNumber, headSha } = getPullRequestMetadata();
                     yield handlePullRequest(octokit, parsedOutput.diagnostics, owner, repo, pullRequestNumber, headSha, failCheck, requestChanges);
+                }))();
+                break;
+            case 'push':
+                yield (() => src_awaiter(this, void 0, void 0, function* () {
+                    const { owner, repo, beforeSha, afterSha } = getPushMetadata();
+                    yield handlePush(octokit, parsedOutput.diagnostics, owner, repo, beforeSha, afterSha, failCheck);
                 }))();
                 break;
             default:
