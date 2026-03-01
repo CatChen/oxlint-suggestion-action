@@ -303,7 +303,7 @@ export async function handlePullRequest(
   let commentsCounter = 0;
   let outOfScopeResultsCounter = 0;
   const reviewComments: ReviewComment[] = [];
-  let matchedReviewCommentNodeIds: { [nodeId: string]: boolean } = {};
+  const matchedReviewCommentNodeIds: { [nodeId: string]: boolean } = {};
   for (const file of files) {
     info(`  File name: ${file.filename}`);
     info(`  File status: ${file.status}`);
@@ -332,12 +332,9 @@ export async function handlePullRequest(
             reviewComments.push(reviewComment);
             info(`    Comment queued`);
           } else {
-            matchedReviewCommentNodeIds = {
-              ...matchedReviewCommentNodeIds,
-              ...Object.fromEntries(
-                matchedComments.map((nodeId) => [nodeId, true]),
-              ),
-            };
+            for (const nodeId of matchedComments) {
+              matchedReviewCommentNodeIds[nodeId] = true;
+            }
             info(`    Comment skipped`);
           }
         } else {
