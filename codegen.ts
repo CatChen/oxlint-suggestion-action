@@ -7,16 +7,16 @@ const config: CodegenConfig = {
   emitLegacyCommonJSImports: false,
   ignoreNoDocuments: true,
   generates: {
-    // './src/__graphql__/': {
-    //   preset: 'client',
-    //   config: {
-    //     useTypeImports: true,
-    //     enumsAsTypes: true,
-    //     dedupeFragments: true,
-    //     nonOptionalTypename: true,
-    //     documentMode: 'string',
-    //   },
-    // },
+    './src/__graphql__/': {
+      preset: 'client',
+      config: {
+        useTypeImports: true,
+        enumsAsTypes: true,
+        dedupeFragments: true,
+        nonOptionalTypename: true,
+        documentMode: 'string',
+      },
+    },
     './schema.graphql': {
       plugins: ['schema-ast'],
       config: {
