@@ -1137,6 +1137,11 @@
   dependencies:
     "@octokit/openapi-types" "^27.0.0"
 
+"@octokit/webhooks-types@^7.6.1":
+  version "7.6.1"
+  resolved "https://registry.yarnpkg.com/@octokit/webhooks-types/-/webhooks-types-7.6.1.tgz#bc96371057c2d54c982c9f8f642655b26cd588eb"
+  integrity sha512-S8u2cJzklBC0FgTwWVLaM8tMrDuDMVE4xiTK4EYXM9GntyvrdbSoxqDQa+Fh57CCNApyIpyeqPhhFEmHPfrXgw==
+
 "@oxfmt/binding-android-arm-eabi@0.35.0":
   version "0.35.0"
   resolved "https://registry.yarnpkg.com/@oxfmt/binding-android-arm-eabi/-/binding-android-arm-eabi-0.35.0.tgz#8720e90fb2cbf5ae891a35e9e44004d32e396864"

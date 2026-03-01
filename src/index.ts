@@ -11,8 +11,10 @@ import { context } from '@actions/github';
 import { changeDirectory } from './changeDirectory.js';
 import { getOctokit } from './getOctokit.js';
 import { getPullRequestMetadata } from './getPullRequestMetadata.js';
+import { getPushMetadata } from './getPushMetadata.js';
 import { parseOxlintOutput } from './parseOxlintOutput.js';
 import { handlePullRequest } from './pullRequest.js';
+import { handlePush } from './push.js';
 import { runOxlint } from './runOxlint.js';
 
 export async function oxlintSuggestion({
@@ -42,12 +44,12 @@ export async function oxlintSuggestion({
   const parsedOutput = parseOxlintOutput(output);
   endGroup();
 
+  const octokit = getOctokit(githubToken);
   info(`Event name: ${context.eventName}`);
   switch (context.eventName) {
     case 'pull_request':
     case 'pull_request_target':
       await (async () => {
-        const octokit = getOctokit(githubToken);
         const { owner, repo, pullRequestNumber, headSha } =
           getPullRequestMetadata();
         await handlePullRequest(
@@ -59,6 +61,20 @@ export async function oxlintSuggestion({
           headSha,
           failCheck,
           requestChanges,
+        );
+      })();
+      break;
+    case 'push':
+      await (async () => {
+        const { owner, repo, beforeSha, afterSha } = getPushMetadata();
+        await handlePush(
+          octokit,
+          parsedOutput.diagnostics,
+          owner,
+          repo,
+          beforeSha,
+          afterSha,
+          failCheck,
         );
       })();
       break;

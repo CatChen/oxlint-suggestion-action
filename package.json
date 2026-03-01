@@ -33,6 +33,7 @@
     "@graphql-codegen/near-operation-file-preset": "^4.0.0",
     "@graphql-codegen/typescript": "5.0.8",
     "@graphql-codegen/typescript-document-nodes": "5.0.8",
+    "@octokit/webhooks-types": "^7.6.1",
     "@types/node": "^25.0.0",
     "@vercel/ncc": "^0.38.0",
     "graphql": "^16.9.0",
