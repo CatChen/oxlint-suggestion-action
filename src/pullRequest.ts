@@ -8,6 +8,7 @@ import type { Api } from '@octokit/plugin-rest-endpoint-methods';
 import { endGroup, error, info, notice, startGroup } from '@actions/core';
 
 import { graphql } from './__graphql__/gql.js';
+import { getDiagnosticLines } from './getDiagnosticLines.js';
 import { getIndexedModifiedLines } from './getIndexedModifiedLines.js';
 
 type ReviewComment = {
@@ -213,11 +214,6 @@ async function unresolveReviewThread(
   await octokit.graphql(unresolveReviewThreadMutation.toString(), {
     nodeId,
   } satisfies VariablesOf<typeof unresolveReviewThreadMutation>);
-}
-
-function getDiagnosticLines(diagnostic: OxlintDiagnostic) {
-  const lines = diagnostic.labels.map((label) => label.span.line);
-  return [...new Set(lines)];
 }
 
 function getReviewCommentFromDiagnostic(
