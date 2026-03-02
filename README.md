@@ -5,10 +5,12 @@
 [![Oxlint](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/oxlint.yml/badge.svg?branch=main&event=push)](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/oxlint.yml)
 [![CodeQL](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/codeql.yml/badge.svg?branch=main&event=schedule)](https://github.com/CatChen/oxlint-suggestion-action/actions/workflows/codeql.yml)
 
-This GitHub Action runs Oxlint and provides inline feedback on the changes in a pull request. Features:
+This GitHub Action runs Oxlint and provides inline feedback on the changes in a Pull Request. Features:
 
 1. It posts review comments for Oxlint diagnostics on modified lines.
-2. It only provides feedback for lines changed in the pull request, so pre-existing issues outside the diff do not add noise.
+2. It only provides feedback for lines changed in the Pull Request, so pre-existing issues outside the diff do not add noise.
+
+(If you use ESLint you should consider [this GitHub Action](https://github.com/marketplace/actions/eslint-feedback) for similar features.)
 
 ## Examples
 
@@ -57,7 +59,7 @@ jobs:
           config-path: '' # optional
 ```
 
-Save the file to `.github/workflows/oxlint.yml`. It will start working on new pull requests.
+Save the file to `.github/workflows/oxlint.yml`. It will start working on new Pull Requests.
 
 ## Options
 
@@ -93,8 +95,8 @@ The default value is an empty string. Oxlint's default config discovery is used 
 
 ### Can I have GitHub suggestions outside of the scope?
 
-No, mostly not. GitHub only allows review comments inside diff hunks (changed lines and a small surrounding context). For consistency, this action only comments on changed lines in the pull request.
+No, mostly not. GitHub only allows review comments inside diff hunks (changed lines and a small surrounding context). For consistency, this action only comments on changed lines in the Pull Request.
 
 ### How can I avoid having annotations in generated code inside a project?
 
-Follow [GitHub's documentation](https://github.com/github/linguist/blob/master/docs/overrides.md#generated-code) and use `.gitattributes` to mark generated files and directories correctly. GitHub will hide those files in pull requests.
+Follow [GitHub's documentation](https://github.com/github/linguist/blob/master/docs/overrides.md#generated-code) and use `.gitattributes` to mark generated files and directories correctly. GitHub will hide those files in Pull Requests.
