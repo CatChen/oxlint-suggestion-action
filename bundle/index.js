@@ -37637,6 +37637,68 @@ function changeDirectory(directory) {
     }
 }
 
+;// CONCATENATED MODULE: ./src/getDiagnosticLines.ts
+function getDiagnosticLines(diagnostic) {
+    const lines = diagnostic.labels.map((label) => label.span.line);
+    return [...new Set(lines)];
+}
+
+;// CONCATENATED MODULE: ./src/getDiagnosticMessage.ts
+function getDiagnosticMessage(diagnostic) {
+    const ruleInfo = diagnostic.code
+        ? diagnostic.url
+            ? `[${diagnostic.code}](${diagnostic.url})`
+            : diagnostic.code
+        : '';
+    return ruleInfo ? `${diagnostic.message}: ${ruleInfo}` : diagnostic.message;
+}
+
+;// CONCATENATED MODULE: ./src/commit.ts
+
+
+
+function handleCommit(eventName, diagnostics, failCheck) {
+    startGroup(`GitHub ${eventName}`);
+    let warningCounter = 0;
+    let errorCounter = 0;
+    for (const diagnostic of diagnostics) {
+        const lines = getDiagnosticLines(diagnostic);
+        for (const line of lines) {
+            info(`  ${diagnostic.filename}:${line}`);
+            switch (diagnostic.severity) {
+                case 'warning':
+                    warning(getDiagnosticMessage(diagnostic), {
+                        file: diagnostic.filename,
+                        startLine: line,
+                    });
+                    warningCounter++;
+                    break;
+                case 'error':
+                    error(getDiagnosticMessage(diagnostic), {
+                        file: diagnostic.filename,
+                        startLine: line,
+                    });
+                    errorCounter++;
+                    break;
+            }
+        }
+    }
+    endGroup();
+    startGroup('Feedback');
+    if (warningCounter > 0 || errorCounter > 0) {
+        if (failCheck) {
+            throw new Error('Oxlint fails.');
+        }
+        else {
+            error('Oxlint fails');
+        }
+    }
+    else {
+        notice('Oxlint passes');
+    }
+    endGroup();
+}
+
 // EXTERNAL MODULE: ./node_modules/bottleneck/light.js
 var light = __nccwpck_require__(3251);
 ;// CONCATENATED MODULE: ./node_modules/@octokit/plugin-retry/dist-bundle/index.js
@@ -37992,6 +38054,15 @@ function getOctokit_getOctokit(githubToken) {
 }
 
 ;// CONCATENATED MODULE: ./src/getPullRequestMetadata.ts
+var getPullRequestMetadata_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 function getPullRequestMetadata() {
@@ -38013,6 +38084,32 @@ function getPullRequestMetadata() {
         baseSha,
         headSha,
     };
+}
+function getPullRequestMetadataByNumber(octokit, pullRequestNumber) {
+    return getPullRequestMetadata_awaiter(this, void 0, void 0, function* () {
+        const owner = github_context.repo.owner;
+        const repo = github_context.repo.repo;
+        const response = yield octokit.rest.pulls.get({
+            owner,
+            repo,
+            pull_number: pullRequestNumber,
+        });
+        const pullRequest = response.data;
+        const baseSha = pullRequest.base.sha;
+        const headSha = pullRequest.head.sha;
+        info(`Owner: ${owner}`);
+        info(`Repo: ${repo}`);
+        info(`Pull Request number: ${pullRequestNumber}`);
+        info(`Base SHA: ${baseSha}`);
+        info(`Head SHA: ${headSha}`);
+        return {
+            owner,
+            repo,
+            pullRequestNumber,
+            baseSha,
+            headSha,
+        };
+    });
 }
 
 ;// CONCATENATED MODULE: ./src/getPushMetadata.ts
@@ -38177,6 +38274,7 @@ var pullRequest_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 
 
 
+
 const REVIEW_BODY = "Oxlint doesn't pass. Please fix all Oxlint issues.";
 const GITHUB_ACTIONS_BOT_ID = 41898282;
 const getReviewThreadsQuery = gql_graphql(`
@@ -38308,10 +38406,6 @@ function unresolveReviewThread(octokit, nodeId) {
             nodeId,
         });
     });
-}
-function getDiagnosticLines(diagnostic) {
-    const lines = diagnostic.labels.map((label) => label.span.line);
-    return [...new Set(lines)];
 }
 function getReviewCommentFromDiagnostic(diagnostic, line, path) {
     const ruleInfo = diagnostic.code
@@ -38461,6 +38555,8 @@ var push_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arg
 };
 
 
+
+
 function getPushFiles(octokit, owner, repo, beforeSha, afterSha) {
     return push_awaiter(this, void 0, void 0, function* () {
         var _a, _b;
@@ -38472,18 +38568,6 @@ function getPushFiles(octokit, owner, repo, beforeSha, afterSha) {
         info(`Files: (${(_b = (_a = response.data.files) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0})`);
         return response.data.files;
     });
-}
-function push_getDiagnosticLines(diagnostic) {
-    const lines = diagnostic.labels.map((label) => label.span.line);
-    return [...new Set(lines)];
-}
-function getDiagnosticMessage(diagnostic) {
-    const ruleInfo = diagnostic.code
-        ? diagnostic.url
-            ? `[${diagnostic.code}](${diagnostic.url})`
-            : diagnostic.code
-        : '';
-    return ruleInfo ? `${diagnostic.message}: ${ruleInfo}` : diagnostic.message;
 }
 function handlePush(octokit, diagnostics, owner, repo, beforeSha, afterSha, failCheck) {
     return push_awaiter(this, void 0, void 0, function* () {
@@ -38513,7 +38597,7 @@ function handlePush(octokit, diagnostics, owner, repo, beforeSha, afterSha, fail
             const fileDiagnostics = indexedDiagnostics[file.filename];
             if (fileDiagnostics) {
                 for (const diagnostic of fileDiagnostics) {
-                    const lines = push_getDiagnosticLines(diagnostic);
+                    const lines = getDiagnosticLines(diagnostic);
                     for (const line of lines) {
                         if (indexedModifiedLines[line]) {
                             info(`  Matched line: ${line}`);
@@ -38634,6 +38718,7 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 
+
 function oxlintSuggestion(_a) {
     return src_awaiter(this, arguments, void 0, function* ({ requestChanges, failCheck, githubToken, directory, targets, oxlintBinPath, configPath, }) {
         startGroup('Oxlint');
@@ -38661,7 +38746,29 @@ function oxlintSuggestion(_a) {
                     yield handlePush(octokit, parsedOutput.diagnostics, owner, repo, beforeSha, afterSha, failCheck);
                 }))();
                 break;
+            case 'workflow_run':
+                yield (() => src_awaiter(this, void 0, void 0, function* () {
+                    const workflowRun = github_context.payload;
+                    if (workflowRun.workflow_run.pull_requests.length > 0) {
+                        for (const pullRequest of workflowRun.workflow_run.pull_requests) {
+                            const { owner, repo, pullRequestNumber, headSha } = yield getPullRequestMetadataByNumber(octokit, pullRequest.number);
+                            yield handlePullRequest(octokit, parsedOutput.diagnostics, owner, repo, pullRequestNumber, headSha, failCheck, requestChanges);
+                        }
+                    }
+                    else {
+                        const workflowSourceEventName = workflowRun.workflow_run.event
+                            .split('_')
+                            .map((word) => { var _a; return ((_a = word[0]) === null || _a === void 0 ? void 0 : _a.toUpperCase()) + word.substring(1); })
+                            .join(' ');
+                        handleCommit(`Workflow (${workflowSourceEventName})`, parsedOutput.diagnostics, failCheck);
+                    }
+                }))();
+                break;
             default:
+                handleCommit(github_context.eventName
+                    .split('_')
+                    .map((word) => { var _a; return ((_a = word[0]) === null || _a === void 0 ? void 0 : _a.toUpperCase()) + word.substring(1); })
+                    .join(' '), parsedOutput.diagnostics, failCheck);
                 break;
         }
     });

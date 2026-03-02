@@ -11,6 +11,8 @@ import {
   warning,
 } from '@actions/core';
 
+import { getDiagnosticLines } from './getDiagnosticLines.js';
+import { getDiagnosticMessage } from './getDiagnosticMessage.js';
 import { getIndexedModifiedLines } from './getIndexedModifiedLines.js';
 
 async function getPushFiles(
@@ -27,20 +29,6 @@ async function getPushFiles(
   });
   info(`Files: (${response.data.files?.length ?? 0})`);
   return response.data.files;
-}
-
-function getDiagnosticLines(diagnostic: OxlintDiagnostic) {
-  const lines = diagnostic.labels.map((label) => label.span.line);
-  return [...new Set(lines)];
-}
-
-function getDiagnosticMessage(diagnostic: OxlintDiagnostic) {
-  const ruleInfo = diagnostic.code
-    ? diagnostic.url
-      ? `[${diagnostic.code}](${diagnostic.url})`
-      : diagnostic.code
-    : '';
-  return ruleInfo ? `${diagnostic.message}: ${ruleInfo}` : diagnostic.message;
 }
 
 export async function handlePush(
