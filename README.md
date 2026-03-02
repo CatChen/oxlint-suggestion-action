@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: yarn install # or npm ci if you use npm and have package-lock.json
 
-      - uses: CatChen/oxlint-suggestion-action@main
+      - uses: CatChen/oxlint-suggestion-action@v1
         with:
           request-changes: true # optional
           fail-check: false # optional
