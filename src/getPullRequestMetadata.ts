@@ -1,16 +1,10 @@
+import type { PullRequestEvent } from '@octokit/webhooks-types/schema.d.ts';
+
 import { info } from '@actions/core';
 import { context } from '@actions/github';
 
 export function getPullRequestMetadata() {
-  const pullRequest = (
-    context.payload as {
-      pull_request: {
-        number: number;
-        base: { sha: string };
-        head: { sha: string };
-      };
-    }
-  ).pull_request;
+  const pullRequest = (context.payload as PullRequestEvent).pull_request;
   const owner = context.repo.owner;
   const repo = context.repo.repo;
   const pullRequestNumber = pullRequest.number;
