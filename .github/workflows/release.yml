@@ -1,6 +1,6 @@
 name: Release
 # NPM publish uses OIDC (OpenID Connect) trusted publishing - no NPM_TOKEN required.
-# Configure the trusted publisher at https://www.npmjs.com (Package → Settings → Trusted publishing).
+# Configure the trusted publisher at https://www.npmjs.com (Package -> Settings -> Trusted publishing).
 # Set "Workflow filename" to release.yml on npmjs.com.
 # The publish job uses Node 24 for OIDC support (requires Node 22.14+ and npm 11.5.1+).
 
@@ -53,6 +53,10 @@ jobs:
 
   test:
     uses: ./.github/workflows/test.yml
+    permissions:
+      pull-requests: write
+      contents: write
+    secrets: inherit
 
   oxlint:
     uses: ./.github/workflows/oxlint.yml
