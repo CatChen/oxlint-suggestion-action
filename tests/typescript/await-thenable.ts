@@ -1,5 +1,5 @@
 12;
-(() => {});
+() => {};
 
 // non-Promise values
 await Math.random;
