@@ -72,7 +72,8 @@ export async function oxlintSuggestion({
       break;
     case 'push':
       await (async () => {
-        const { owner, repo, beforeSha, afterSha } = getPushMetadata();
+        const { owner, repo, beforeSha, afterSha, created, deleted } =
+          getPushMetadata();
         await handlePush(
           octokit,
           parsedOutput.diagnostics,
@@ -80,6 +81,8 @@ export async function oxlintSuggestion({
           repo,
           beforeSha,
           afterSha,
+          created,
+          deleted,
           failCheck,
         );
       })();

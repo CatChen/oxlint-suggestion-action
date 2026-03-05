@@ -15,6 +15,8 @@ import { getDiagnosticLines } from './getDiagnosticLines.js';
 import { getDiagnosticMessage } from './getDiagnosticMessage.js';
 import { getIndexedModifiedLines } from './getIndexedModifiedLines.js';
 
+const ZERO_SHA = '0000000000000000000000000000000000000000';
+
 async function getPushFiles(
   octokit: Octokit & Api,
   owner: string,
@@ -38,9 +40,21 @@ export async function handlePush(
   repo: string,
   beforeSha: string,
   afterSha: string,
+  created: boolean,
+  deleted: boolean,
   failCheck: boolean,
 ) {
   startGroup('GitHub Push');
+  if (created || deleted || beforeSha === ZERO_SHA || afterSha === ZERO_SHA) {
+    info(`Skipped comparing files in the push`);
+    info(`  Created: ${created}`);
+    info(`  Deleted: ${deleted}`);
+    info(`  Before SHA: ${beforeSha}`);
+    info(`  After SHA: ${afterSha}`);
+    endGroup();
+    return;
+  }
+
   const files = await getPushFiles(octokit, owner, repo, beforeSha, afterSha);
 
   if (files === undefined || files.length === 0) {

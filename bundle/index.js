@@ -38121,15 +38121,21 @@ function getPushMetadata() {
     const repo = github_context.repo.repo;
     const beforeSha = push.before;
     const afterSha = push.after;
+    const created = push.created;
+    const deleted = push.deleted;
     info(`Owner: ${owner}`);
     info(`Repo: ${repo}`);
     info(`Before SHA: ${beforeSha}`);
     info(`After SHA: ${afterSha}`);
+    info(`Created: ${created}`);
+    info(`Deleted: ${deleted}`);
     return {
         owner,
         repo,
         beforeSha,
         afterSha,
+        created,
+        deleted,
     };
 }
 
@@ -38557,6 +38563,7 @@ var push_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arg
 
 
 
+const ZERO_SHA = '0000000000000000000000000000000000000000';
 function getPushFiles(octokit, owner, repo, beforeSha, afterSha) {
     return push_awaiter(this, void 0, void 0, function* () {
         var _a, _b;
@@ -38569,11 +38576,20 @@ function getPushFiles(octokit, owner, repo, beforeSha, afterSha) {
         return response.data.files;
     });
 }
-function handlePush(octokit, diagnostics, owner, repo, beforeSha, afterSha, failCheck) {
+function handlePush(octokit, diagnostics, owner, repo, beforeSha, afterSha, created, deleted, failCheck) {
     return push_awaiter(this, void 0, void 0, function* () {
         var _a, _b;
         var _c;
         startGroup('GitHub Push');
+        if (created || deleted || beforeSha === ZERO_SHA || afterSha === ZERO_SHA) {
+            info(`Skipped comparing files in the push`);
+            info(`  Created: ${created}`);
+            info(`  Deleted: ${deleted}`);
+            info(`  Before SHA: ${beforeSha}`);
+            info(`  After SHA: ${afterSha}`);
+            endGroup();
+            return;
+        }
         const files = yield getPushFiles(octokit, owner, repo, beforeSha, afterSha);
         if (files === undefined || files.length === 0) {
             info(`Push contains no files`);
@@ -38742,8 +38758,8 @@ function oxlintSuggestion(_a) {
                 break;
             case 'push':
                 yield (() => src_awaiter(this, void 0, void 0, function* () {
-                    const { owner, repo, beforeSha, afterSha } = getPushMetadata();
-                    yield handlePush(octokit, parsedOutput.diagnostics, owner, repo, beforeSha, afterSha, failCheck);
+                    const { owner, repo, beforeSha, afterSha, created, deleted } = getPushMetadata();
+                    yield handlePush(octokit, parsedOutput.diagnostics, owner, repo, beforeSha, afterSha, created, deleted, failCheck);
                 }))();
                 break;
             case 'workflow_run':
