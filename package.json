@@ -2,6 +2,7 @@
   "name": "oxlint-suggestion-action",
   "version": "1.0.0",
   "description": "A template to create custom GitHub Action with TypeScript/JavaScript.",
+  "packageManager": "yarn@4.13.0",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "type": "module",
