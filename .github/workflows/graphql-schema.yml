@@ -29,6 +29,9 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.get-github-app-token.outputs.token }}
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
@@ -36,7 +39,7 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        run: yarn
+        run: yarn install --immutable
 
       - name: Generate GraphQL schema and types
         run: yarn codegen
