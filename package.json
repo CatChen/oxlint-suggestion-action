@@ -8,8 +8,8 @@
   "type": "module",
   "scripts": {
     "codegen": "rm -rf src/__graphql__ && graphql-codegen-esm --config codegen.ts",
-    "build": "rm -rf dist && yarn tsc",
-    "bundle": "rm -rf bundle && yarn ncc build src/index.ts --source-map --license licenses.txt --out bundle",
+    "build": "rm -rf dist && tsc",
+    "bundle": "rm -rf bundle && ncc build src/index.ts --source-map --license licenses.txt --out bundle",
     "format": "oxfmt --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "oxlint src",
