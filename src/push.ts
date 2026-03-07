@@ -1,6 +1,4 @@
 import type { OxlintDiagnostic } from './parseOxlintOutput.js';
-import type { Octokit } from '@octokit/core';
-import type { Api } from '@octokit/plugin-rest-endpoint-methods';
 
 import {
   endGroup,
@@ -14,30 +12,12 @@ import {
 import { getDiagnosticLines } from './getDiagnosticLines.js';
 import { getDiagnosticMessage } from './getDiagnosticMessage.js';
 import { getIndexedModifiedLines } from './getIndexedModifiedLines.js';
+import { getPushFiles } from './getPushFiles.js';
 
 const ZERO_SHA = '0000000000000000000000000000000000000000';
 
-async function getPushFiles(
-  octokit: Octokit & Api,
-  owner: string,
-  repo: string,
-  beforeSha: string,
-  afterSha: string,
-) {
-  const response = await octokit.rest.repos.compareCommitsWithBasehead({
-    owner,
-    repo,
-    basehead: `${beforeSha}...${afterSha}`,
-  });
-  info(`Files: (${response.data.files?.length ?? 0})`);
-  return response.data.files;
-}
-
 export async function handlePush(
-  octokit: Octokit & Api,
   diagnostics: OxlintDiagnostic[],
-  owner: string,
-  repo: string,
   beforeSha: string,
   afterSha: string,
   created: boolean,
@@ -55,9 +35,9 @@ export async function handlePush(
     return;
   }
 
-  const files = await getPushFiles(octokit, owner, repo, beforeSha, afterSha);
+  const files = await getPushFiles(beforeSha, afterSha);
 
-  if (files === undefined || files.length === 0) {
+  if (files.length === 0) {
     info(`Push contains no files`);
     endGroup();
     return;
@@ -78,7 +58,10 @@ export async function handlePush(
       continue;
     }
 
-    const indexedModifiedLines = getIndexedModifiedLines(file);
+    const indexedModifiedLines = getIndexedModifiedLines(
+      file.filename,
+      file.patch,
+    );
     const fileDiagnostics = indexedDiagnostics[file.filename];
     if (fileDiagnostics) {
       for (const diagnostic of fileDiagnostics) {
