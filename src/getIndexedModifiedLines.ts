@@ -2,10 +2,7 @@ import { info } from '@actions/core';
 
 const HUNK_HEADER_PATTERN = /^@@ -\d+(,\d+)? \+(\d+)(,(\d+))? @@/;
 
-export function getIndexedModifiedLines(
-  filename: string,
-  patch: string | undefined,
-): {
+export function getIndexedModifiedLines(patch: string | undefined): {
   [line: string]: true;
 } {
   const modifiedLines = [];
@@ -19,12 +16,16 @@ export function getIndexedModifiedLines(
         const matches = line.match(HUNK_HEADER_PATTERN);
         currentLine = parseInt(matches?.[2] || '1');
         remainingLinesInHunk = parseInt(matches?.[4] || '1');
-        if (!currentLine || !remainingLinesInHunk) {
-          throw new Error(
-            `Expecting hunk header in ${filename} but seeing ${line}.`,
-          );
+        if (
+          !matches ||
+          Number.isNaN(currentLine) ||
+          Number.isNaN(remainingLinesInHunk)
+        ) {
+          throw new Error(`Unable to parse hunk header from line: ${line}.`);
         }
       } else if (line[0] === '-') {
+        continue;
+      } else if (line[0] === '\\') {
         continue;
       } else {
         if (line[0] === '+') {

@@ -1,3 +1,3 @@
-export declare function getIndexedModifiedLines(filename: string, patch: string | undefined): {
+export declare function getIndexedModifiedLines(patch: string | undefined): {
     [line: string]: true;
 };

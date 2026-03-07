@@ -42,7 +42,7 @@ function parseFileStatus(nameStatusOutput: string): PushFile[] {
     const fields = line.split('\t');
     const statusToken = fields[0];
     if (!statusToken) {
-      throw new Error(`Unable to parse status token from: ${line}`);
+      throw new Error(`Unable to parse status token from line: ${line}`);
     }
     const status = getStatus(statusToken);
     if (statusToken[0] === 'R' || statusToken[0] === 'C') {
@@ -50,14 +50,14 @@ function parseFileStatus(nameStatusOutput: string): PushFile[] {
       const filename = fields[2];
       if (!previousFilename || !filename) {
         throw new Error(
-          `Unable to parse renamed or copied filename from: ${statusToken}`,
+          `Unable to parse renamed or copied filename from line: ${line}`,
         );
       }
       files.push({ filename, status });
     } else {
       const filename = fields[1];
       if (!filename) {
-        throw new Error(`Unable to parse filename from: ${statusToken}`);
+        throw new Error(`Unable to parse filename from line: ${line}`);
       }
       files.push({ filename, status });
     }
@@ -66,13 +66,18 @@ function parseFileStatus(nameStatusOutput: string): PushFile[] {
 }
 
 function extractPatches(diffOutput: string, filenames: string[]) {
-  const patchLinesByFile: Record<string, string[]> = {};
+  const patchesByFilename: Record<string, string> = {};
+  let patchLines: string[] = [];
   let filenameIndex = -1;
   let filename: string | undefined;
 
   const lines = diffOutput.split('\n');
   for (const line of lines) {
     if (line.startsWith('diff --git ')) {
+      if (filename !== undefined && patchLines.length > 0) {
+        patchesByFilename[filename] = patchLines.join('\n');
+      }
+
       filenameIndex++;
       filename = filenames[filenameIndex];
       if (filename === undefined) {
@@ -80,12 +85,17 @@ function extractPatches(diffOutput: string, filenames: string[]) {
           `Found more diff sections than expected files. Expected ${filenames.length}.`,
         );
       }
-      patchLinesByFile[filename] ??= [];
+      patchLines = [];
       continue;
     }
 
-    if (filename !== undefined) {
-      patchLinesByFile[filename]?.push(line);
+    if (line.startsWith('@@ ')) {
+      patchLines.push(line);
+      continue;
+    }
+
+    if (patchLines.length > 0) {
+      patchLines.push(line);
     }
   }
 
@@ -97,9 +107,8 @@ function extractPatches(diffOutput: string, filenames: string[]) {
     );
   }
 
-  const patchesByFilename: Record<string, string> = {};
-  for (const [file, patchLines] of Object.entries(patchLinesByFile)) {
-    patchesByFilename[file] = patchLines.join('\n');
+  if (filename !== undefined && patchLines.length > 0) {
+    patchesByFilename[filename] = patchLines.join('\n');
   }
 
   return patchesByFilename;
