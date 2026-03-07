@@ -142,7 +142,14 @@ export async function getPushFiles(beforeSha: string, afterSha: string) {
 
   const nameStatusResult = await getExecOutput(
     'git',
-    ['diff', '--name-status', '--find-renames', `${beforeSha}..${afterSha}`],
+    [
+      '-c',
+      'core.quotepath=false',
+      'diff',
+      '--name-status',
+      '--find-renames',
+      `${beforeSha}..${afterSha}`,
+    ],
     {
       silent: true,
     },
@@ -153,6 +160,8 @@ export async function getPushFiles(beforeSha: string, afterSha: string) {
   const patchResult = await getExecOutput(
     'git',
     [
+      '-c',
+      'core.quotepath=false',
       'diff',
       '--unified=0',
       '--no-color',

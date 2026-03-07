@@ -38237,11 +38237,12 @@ function getIndexedModifiedLines(patch) {
         for (const line of lines) {
             if (remainingLinesInHunk === 0) {
                 const matches = line.match(HUNK_HEADER_PATTERN);
-                currentLine = parseInt((matches === null || matches === void 0 ? void 0 : matches[2]) || '1');
-                remainingLinesInHunk = parseInt((matches === null || matches === void 0 ? void 0 : matches[4]) || '1');
-                if (!matches ||
-                    Number.isNaN(currentLine) ||
-                    Number.isNaN(remainingLinesInHunk)) {
+                if (!matches) {
+                    continue;
+                }
+                currentLine = parseInt(matches[2] || '1');
+                remainingLinesInHunk = parseInt(matches[4] || '1');
+                if (Number.isNaN(currentLine) || Number.isNaN(remainingLinesInHunk)) {
                     throw new Error(`Unable to parse hunk header from line: ${line}.`);
                 }
             }
@@ -38678,12 +38679,21 @@ function getPushFiles(beforeSha, afterSha) {
                 afterSha,
             ]);
         }
-        const nameStatusResult = yield getExecOutput('git', ['diff', '--name-status', '--find-renames', `${beforeSha}..${afterSha}`], {
+        const nameStatusResult = yield getExecOutput('git', [
+            '-c',
+            'core.quotepath=false',
+            'diff',
+            '--name-status',
+            '--find-renames',
+            `${beforeSha}..${afterSha}`,
+        ], {
             silent: true,
         });
         const files = parseFileStatus(nameStatusResult.stdout);
         info(`Files: (${files.length})`);
         const patchResult = yield getExecOutput('git', [
+            '-c',
+            'core.quotepath=false',
             'diff',
             '--unified=0',
             '--no-color',

@@ -14,13 +14,12 @@ export function getIndexedModifiedLines(patch: string | undefined): {
     for (const line of lines) {
       if (remainingLinesInHunk === 0) {
         const matches = line.match(HUNK_HEADER_PATTERN);
-        currentLine = parseInt(matches?.[2] || '1');
-        remainingLinesInHunk = parseInt(matches?.[4] || '1');
-        if (
-          !matches ||
-          Number.isNaN(currentLine) ||
-          Number.isNaN(remainingLinesInHunk)
-        ) {
+        if (!matches) {
+          continue;
+        }
+        currentLine = parseInt(matches[2] || '1');
+        remainingLinesInHunk = parseInt(matches[4] || '1');
+        if (Number.isNaN(currentLine) || Number.isNaN(remainingLinesInHunk)) {
           throw new Error(`Unable to parse hunk header from line: ${line}.`);
         }
       } else if (line[0] === '-') {
