@@ -38227,24 +38227,29 @@ function gql_graphql(source) {
 ;// CONCATENATED MODULE: ./src/getIndexedModifiedLines.ts
 
 const HUNK_HEADER_PATTERN = /^@@ -\d+(,\d+)? \+(\d+)(,(\d+))? @@/;
-function getIndexedModifiedLines(file) {
-    var _a;
+function getIndexedModifiedLines(patch) {
     const modifiedLines = [];
     const indexedModifiedLines = {};
     let currentLine = 0;
     let remainingLinesInHunk = 0;
-    const lines = (_a = file.patch) === null || _a === void 0 ? void 0 : _a.split('\n');
+    const lines = patch === null || patch === void 0 ? void 0 : patch.split('\n');
     if (lines) {
         for (const line of lines) {
             if (remainingLinesInHunk === 0) {
                 const matches = line.match(HUNK_HEADER_PATTERN);
-                currentLine = parseInt((matches === null || matches === void 0 ? void 0 : matches[2]) || '1');
-                remainingLinesInHunk = parseInt((matches === null || matches === void 0 ? void 0 : matches[4]) || '1');
-                if (!currentLine || !remainingLinesInHunk) {
-                    throw new Error(`Expecting hunk header in ${file.filename} but seeing ${line}.`);
+                if (!matches) {
+                    continue;
+                }
+                currentLine = parseInt(matches[2] || '1');
+                remainingLinesInHunk = parseInt(matches[4] || '1');
+                if (Number.isNaN(currentLine) || Number.isNaN(remainingLinesInHunk)) {
+                    throw new Error(`Unable to parse hunk header from line: ${line}.`);
                 }
             }
             else if (line[0] === '-') {
+                continue;
+            }
+            else if (line[0] === '\\') {
                 continue;
             }
             else {
@@ -38258,8 +38263,8 @@ function getIndexedModifiedLines(file) {
         }
     }
     info(`  File modified lines: ${modifiedLines.join()}`);
-    if (file.patch !== undefined) {
-        info(`  File patch: \n${file.patch
+    if (patch !== undefined) {
+        info(`  File patch: \n${patch
             .split('\n')
             .map((line) => '    ' + line)
             .join('\n')}\n`);
@@ -38462,7 +38467,7 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
             if (file.status === 'removed') {
                 continue;
             }
-            const indexedModifiedLines = getIndexedModifiedLines(file);
+            const indexedModifiedLines = getIndexedModifiedLines(file.patch);
             const fileDiagnostics = (_c = indexedDiagnostics[file.filename]) !== null && _c !== void 0 ? _c : [];
             for (const diagnostic of fileDiagnostics) {
                 const lines = getDiagnosticLines(diagnostic);
@@ -38549,6 +38554,163 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
     });
 }
 
+;// CONCATENATED MODULE: ./src/getPushFiles.ts
+var getPushFiles_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+function getStatus(statusToken) {
+    switch (statusToken[0]) {
+        case 'A':
+            return 'added';
+        case 'C':
+            return 'copied';
+        case 'D':
+            return 'removed';
+        case 'M':
+            return 'modified';
+        case 'R':
+            return 'renamed';
+        case 'T':
+            return 'changed';
+        default:
+            warning(`Unknown git diff file status "${statusToken}". Treating as modified.`);
+            return 'modified';
+    }
+}
+function parseFileStatus(nameStatusOutput) {
+    const files = [];
+    const lines = nameStatusOutput.split('\n');
+    for (const line of lines) {
+        if (!line) {
+            continue;
+        }
+        const fields = line.split('\t');
+        const statusToken = fields[0];
+        if (!statusToken) {
+            throw new Error(`Unable to parse status token from line: ${line}`);
+        }
+        const status = getStatus(statusToken);
+        if (statusToken[0] === 'R' || statusToken[0] === 'C') {
+            const previousFilename = fields[1];
+            const filename = fields[2];
+            if (!previousFilename || !filename) {
+                throw new Error(`Unable to parse renamed or copied filename from line: ${line}`);
+            }
+            files.push({ filename, status });
+        }
+        else {
+            const filename = fields[1];
+            if (!filename) {
+                throw new Error(`Unable to parse filename from line: ${line}`);
+            }
+            files.push({ filename, status });
+        }
+    }
+    return files;
+}
+function extractPatches(diffOutput, filenames) {
+    const patchesByFilename = {};
+    let patchLines = [];
+    let filenameIndex = -1;
+    let filename;
+    const lines = diffOutput.split('\n');
+    for (const line of lines) {
+        if (line.startsWith('diff --git ')) {
+            if (filename !== undefined && patchLines.length > 0) {
+                patchesByFilename[filename] = patchLines.join('\n');
+            }
+            filenameIndex++;
+            filename = filenames[filenameIndex];
+            if (filename === undefined) {
+                throw new Error(`Found more diff sections than expected files. Expected ${filenames.length}.`);
+            }
+            patchLines = [];
+            continue;
+        }
+        if (line.startsWith('@@ ')) {
+            patchLines.push(line);
+            continue;
+        }
+        if (patchLines.length > 0) {
+            patchLines.push(line);
+        }
+    }
+    if (filenameIndex + 1 !== filenames.length) {
+        throw new Error(`Found fewer diff sections than expected files. Expected ${filenames.length}, found ${filenameIndex + 1}.`);
+    }
+    if (filename !== undefined && patchLines.length > 0) {
+        patchesByFilename[filename] = patchLines.join('\n');
+    }
+    return patchesByFilename;
+}
+function ensureCommitExists(sha) {
+    return getPushFiles_awaiter(this, void 0, void 0, function* () {
+        try {
+            yield getExecOutput('git', ['cat-file', '-e', `${sha}^{commit}`]);
+            return true;
+        }
+        catch (_a) {
+            return false;
+        }
+    });
+}
+function getPushFiles(beforeSha, afterSha) {
+    return getPushFiles_awaiter(this, void 0, void 0, function* () {
+        const [beforeExists, afterExists] = yield Promise.all([
+            ensureCommitExists(beforeSha),
+            ensureCommitExists(afterSha),
+        ]);
+        if (!beforeExists || !afterExists) {
+            info(`Fetching commits for push range ${beforeSha}..${afterSha}`);
+            yield getExecOutput('git', [
+                'fetch',
+                '--no-tags',
+                '--depth=1',
+                'origin',
+                beforeSha,
+                afterSha,
+            ]);
+        }
+        const nameStatusResult = yield getExecOutput('git', [
+            '-c',
+            'core.quotepath=false',
+            'diff',
+            '--name-status',
+            '--find-renames',
+            `${beforeSha}..${afterSha}`,
+        ], {
+            silent: true,
+        });
+        const files = parseFileStatus(nameStatusResult.stdout);
+        info(`Files: (${files.length})`);
+        const patchResult = yield getExecOutput('git', [
+            '-c',
+            'core.quotepath=false',
+            'diff',
+            '--unified=0',
+            '--no-color',
+            '--no-ext-diff',
+            '--find-renames',
+            `${beforeSha}..${afterSha}`,
+        ], {
+            silent: true,
+        });
+        const patches = extractPatches(patchResult.stdout, files.map((file) => file.filename));
+        for (const file of files) {
+            file.patch = patches[file.filename];
+        }
+        return files;
+    });
+}
+
 ;// CONCATENATED MODULE: ./src/push.ts
 var push_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -38563,20 +38725,9 @@ var push_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arg
 
 
 
+
 const ZERO_SHA = '0000000000000000000000000000000000000000';
-function getPushFiles(octokit, owner, repo, beforeSha, afterSha) {
-    return push_awaiter(this, void 0, void 0, function* () {
-        var _a, _b;
-        const response = yield octokit.rest.repos.compareCommitsWithBasehead({
-            owner,
-            repo,
-            basehead: `${beforeSha}...${afterSha}`,
-        });
-        info(`Files: (${(_b = (_a = response.data.files) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0})`);
-        return response.data.files;
-    });
-}
-function handlePush(octokit, diagnostics, owner, repo, beforeSha, afterSha, created, deleted, failCheck) {
+function handlePush(diagnostics, beforeSha, afterSha, created, deleted, failCheck) {
     return push_awaiter(this, void 0, void 0, function* () {
         var _a, _b;
         var _c;
@@ -38590,8 +38741,8 @@ function handlePush(octokit, diagnostics, owner, repo, beforeSha, afterSha, crea
             endGroup();
             return;
         }
-        const files = yield getPushFiles(octokit, owner, repo, beforeSha, afterSha);
-        if (files === undefined || files.length === 0) {
+        const files = yield getPushFiles(beforeSha, afterSha);
+        if (files.length === 0) {
             info(`Push contains no files`);
             endGroup();
             return;
@@ -38609,7 +38760,7 @@ function handlePush(octokit, diagnostics, owner, repo, beforeSha, afterSha, crea
             if (file.status === 'removed') {
                 continue;
             }
-            const indexedModifiedLines = getIndexedModifiedLines(file);
+            const indexedModifiedLines = getIndexedModifiedLines(file.patch);
             const fileDiagnostics = indexedDiagnostics[file.filename];
             if (fileDiagnostics) {
                 for (const diagnostic of fileDiagnostics) {
@@ -38758,8 +38909,8 @@ function oxlintSuggestion(_a) {
                 break;
             case 'push':
                 yield (() => src_awaiter(this, void 0, void 0, function* () {
-                    const { owner, repo, beforeSha, afterSha, created, deleted } = getPushMetadata();
-                    yield handlePush(octokit, parsedOutput.diagnostics, owner, repo, beforeSha, afterSha, created, deleted, failCheck);
+                    const { beforeSha, afterSha, created, deleted } = getPushMetadata();
+                    yield handlePush(parsedOutput.diagnostics, beforeSha, afterSha, created, deleted, failCheck);
                 }))();
                 break;
             case 'workflow_run':
