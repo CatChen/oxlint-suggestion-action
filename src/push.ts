@@ -58,10 +58,7 @@ export async function handlePush(
       continue;
     }
 
-    const indexedModifiedLines = getIndexedModifiedLines(
-      file.filename,
-      file.patch,
-    );
+    const indexedModifiedLines = getIndexedModifiedLines(file.patch);
     const fileDiagnostics = indexedDiagnostics[file.filename];
     if (fileDiagnostics) {
       for (const diagnostic of fileDiagnostics) {

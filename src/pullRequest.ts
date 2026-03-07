@@ -307,10 +307,7 @@ export async function handlePullRequest(
       continue;
     }
 
-    const indexedModifiedLines = getIndexedModifiedLines(
-      file.filename,
-      file.patch,
-    );
+    const indexedModifiedLines = getIndexedModifiedLines(file.patch);
     const fileDiagnostics = indexedDiagnostics[file.filename] ?? [];
     for (const diagnostic of fileDiagnostics) {
       const lines = getDiagnosticLines(diagnostic);

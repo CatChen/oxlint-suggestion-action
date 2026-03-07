@@ -38227,7 +38227,7 @@ function gql_graphql(source) {
 ;// CONCATENATED MODULE: ./src/getIndexedModifiedLines.ts
 
 const HUNK_HEADER_PATTERN = /^@@ -\d+(,\d+)? \+(\d+)(,(\d+))? @@/;
-function getIndexedModifiedLines(filename, patch) {
+function getIndexedModifiedLines(patch) {
     const modifiedLines = [];
     const indexedModifiedLines = {};
     let currentLine = 0;
@@ -38239,11 +38239,16 @@ function getIndexedModifiedLines(filename, patch) {
                 const matches = line.match(HUNK_HEADER_PATTERN);
                 currentLine = parseInt((matches === null || matches === void 0 ? void 0 : matches[2]) || '1');
                 remainingLinesInHunk = parseInt((matches === null || matches === void 0 ? void 0 : matches[4]) || '1');
-                if (!currentLine || !remainingLinesInHunk) {
-                    throw new Error(`Expecting hunk header in ${filename} but seeing ${line}.`);
+                if (!matches ||
+                    Number.isNaN(currentLine) ||
+                    Number.isNaN(remainingLinesInHunk)) {
+                    throw new Error(`Unable to parse hunk header from line: ${line}.`);
                 }
             }
             else if (line[0] === '-') {
+                continue;
+            }
+            else if (line[0] === '\\') {
                 continue;
             }
             else {
@@ -38461,7 +38466,7 @@ function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber,
             if (file.status === 'removed') {
                 continue;
             }
-            const indexedModifiedLines = getIndexedModifiedLines(file.filename, file.patch);
+            const indexedModifiedLines = getIndexedModifiedLines(file.patch);
             const fileDiagnostics = (_c = indexedDiagnostics[file.filename]) !== null && _c !== void 0 ? _c : [];
             for (const diagnostic of fileDiagnostics) {
                 const lines = getDiagnosticLines(diagnostic);
@@ -38589,21 +38594,21 @@ function parseFileStatus(nameStatusOutput) {
         const fields = line.split('\t');
         const statusToken = fields[0];
         if (!statusToken) {
-            throw new Error(`Unable to parse status token from: ${line}`);
+            throw new Error(`Unable to parse status token from line: ${line}`);
         }
         const status = getStatus(statusToken);
         if (statusToken[0] === 'R' || statusToken[0] === 'C') {
             const previousFilename = fields[1];
             const filename = fields[2];
             if (!previousFilename || !filename) {
-                throw new Error(`Unable to parse renamed or copied filename from: ${statusToken}`);
+                throw new Error(`Unable to parse renamed or copied filename from line: ${line}`);
             }
             files.push({ filename, status });
         }
         else {
             const filename = fields[1];
             if (!filename) {
-                throw new Error(`Unable to parse filename from: ${statusToken}`);
+                throw new Error(`Unable to parse filename from line: ${line}`);
             }
             files.push({ filename, status });
         }
@@ -38611,31 +38616,37 @@ function parseFileStatus(nameStatusOutput) {
     return files;
 }
 function extractPatches(diffOutput, filenames) {
-    var _a, _b;
-    const patchLinesByFile = {};
+    const patchesByFilename = {};
+    let patchLines = [];
     let filenameIndex = -1;
     let filename;
     const lines = diffOutput.split('\n');
     for (const line of lines) {
         if (line.startsWith('diff --git ')) {
+            if (filename !== undefined && patchLines.length > 0) {
+                patchesByFilename[filename] = patchLines.join('\n');
+            }
             filenameIndex++;
             filename = filenames[filenameIndex];
             if (filename === undefined) {
                 throw new Error(`Found more diff sections than expected files. Expected ${filenames.length}.`);
             }
-            (_a = patchLinesByFile[filename]) !== null && _a !== void 0 ? _a : (patchLinesByFile[filename] = []);
+            patchLines = [];
             continue;
         }
-        if (filename !== undefined) {
-            (_b = patchLinesByFile[filename]) === null || _b === void 0 ? void 0 : _b.push(line);
+        if (line.startsWith('@@ ')) {
+            patchLines.push(line);
+            continue;
+        }
+        if (patchLines.length > 0) {
+            patchLines.push(line);
         }
     }
     if (filenameIndex + 1 !== filenames.length) {
         throw new Error(`Found fewer diff sections than expected files. Expected ${filenames.length}, found ${filenameIndex + 1}.`);
     }
-    const patchesByFilename = {};
-    for (const [file, patchLines] of Object.entries(patchLinesByFile)) {
-        patchesByFilename[file] = patchLines.join('\n');
+    if (filename !== undefined && patchLines.length > 0) {
+        patchesByFilename[filename] = patchLines.join('\n');
     }
     return patchesByFilename;
 }
@@ -38739,7 +38750,7 @@ function handlePush(diagnostics, beforeSha, afterSha, created, deleted, failChec
             if (file.status === 'removed') {
                 continue;
             }
-            const indexedModifiedLines = getIndexedModifiedLines(file.filename, file.patch);
+            const indexedModifiedLines = getIndexedModifiedLines(file.patch);
             const fileDiagnostics = indexedDiagnostics[file.filename];
             if (fileDiagnostics) {
                 for (const diagnostic of fileDiagnostics) {
