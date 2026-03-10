@@ -19,8 +19,8 @@ permissions:
   checks: read
 
 jobs:
-  test:
-    name: Test Pull Request
+  test_pull_request:
+    name: Pull Request Test
     if: ${{ !startsWith(github.head_ref || github.event.workflow_run.head_branch, 'workflows/tests/') }}
     runs-on: ubuntu-latest
     env:
