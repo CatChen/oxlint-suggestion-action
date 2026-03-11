@@ -1151,7 +1151,7 @@ export type AuditLogOrder = {
 
 /** Properties by which Audit Log connections can be ordered. */
 export type AuditLogOrderField =
-  /** Order audit log entries by timestamp */
+/** Order audit log entries by timestamp */
   'CREATED_AT';
 
 /** Represents a 'auto_merge_disabled' event on a given pull request. */
@@ -6010,7 +6010,7 @@ export type DeploymentOrder = {
 
 /** Properties by which deployment connections can be ordered. */
 export type DeploymentOrderField =
-  /** Order collection by creation time */
+/** Order collection by creation time */
   'CREATED_AT';
 
 /** A protection rule. */
@@ -7225,7 +7225,7 @@ export type EnterpriseAdministratorInvitationOrder = {
 
 /** Properties by which enterprise administrator invitation connections can be ordered. */
 export type EnterpriseAdministratorInvitationOrderField =
-  /** Order enterprise administrator member invitations by creation time */
+/** Order enterprise administrator member invitations by creation time */
   'CREATED_AT';
 
 /** The possible administrator roles in an enterprise account. */
@@ -7485,7 +7485,7 @@ export type EnterpriseMemberInvitationOrder = {
 
 /** Properties by which enterprise member invitation connections can be ordered. */
 export type EnterpriseMemberInvitationOrderField =
-  /** Order enterprise member invitations by creation time */
+/** Order enterprise member invitations by creation time */
   'CREATED_AT';
 
 /** Ordering options for enterprise member connections. */
@@ -7544,7 +7544,7 @@ export type EnterpriseOrder = {
 
 /** Properties by which enterprise connections can be ordered. */
 export type EnterpriseOrderField =
-  /** Order enterprises by name */
+/** Order enterprises by name */
   'NAME';
 
 /** The connection type for Organization. */
@@ -8361,7 +8361,7 @@ export type EnterpriseServerUserAccountEmailOrder = {
 
 /** Properties by which Enterprise Server user account email connections can be ordered. */
 export type EnterpriseServerUserAccountEmailOrderField =
-  /** Order emails by email */
+/** Order emails by email */
   'EMAIL';
 
 /** Ordering options for Enterprise Server user account connections. */
@@ -8430,7 +8430,7 @@ export type EnterpriseServerUserAccountsUploadOrder = {
 
 /** Properties by which Enterprise Server user accounts upload connections can be ordered. */
 export type EnterpriseServerUserAccountsUploadOrderField =
-  /** Order user accounts uploads by creation time */
+/** Order user accounts uploads by creation time */
   'CREATED_AT';
 
 /** Synchronization state of the Enterprise Server user accounts upload */
@@ -8569,7 +8569,7 @@ export type EnvironmentEdge = {
 
 /** Properties by which environments connections can be ordered */
 export type EnvironmentOrderField =
-  /** Order environments by name. */
+/** Order environments by name. */
   'NAME';
 
 /** Properties by which environments connections can be ordered */
@@ -10158,7 +10158,7 @@ export type IssueCommentOrder = {
 
 /** Properties by which issue comment connections can be ordered. */
 export type IssueCommentOrderField =
-  /** Order issue comments by update time */
+/** Order issue comments by update time */
   'UPDATED_AT';
 
 /** The connection type for Issue. */
@@ -10887,7 +10887,7 @@ export type LanguageOrder = {
 
 /** Properties by which language connections can be ordered. */
 export type LanguageOrderField =
-  /** Order languages by the size of all files containing the language */
+/** Order languages by the size of all files containing the language */
   'SIZE';
 
 /** A repository's open source license */
@@ -14417,7 +14417,7 @@ export type OidcProviderExternalIdentitiesArgs = {
 
 /** The OIDC identity provider type */
 export type OidcProviderType =
-  /** Azure Active Directory */
+/** Azure Active Directory */
   'AAD';
 
 /** Metadata for an audit entry with action oauth_application.* */
@@ -15817,7 +15817,7 @@ export type OrgEnterpriseOwnerOrder = {
 
 /** Properties by which enterprise owners can be ordered. */
 export type OrgEnterpriseOwnerOrderField =
-  /** Order enterprise owners by login. */
+/** Order enterprise owners by login. */
   'LOGIN';
 
 /** Audit log entry for a org.invite_member event. */
@@ -18834,7 +18834,7 @@ export type PackageFileOrder = {
 
 /** Properties by which package file connections can be ordered. */
 export type PackageFileOrderField =
-  /** Order package files by creation time */
+/** Order package files by creation time */
   'CREATED_AT';
 
 /** Ways in which lists of packages can be ordered upon return. */
@@ -18847,7 +18847,7 @@ export type PackageOrder = {
 
 /** Properties by which package connections can be ordered. */
 export type PackageOrderField =
-  /** Order packages by creation time */
+/** Order packages by creation time */
   'CREATED_AT';
 
 /** Represents an owner of a package. */
@@ -18971,7 +18971,7 @@ export type PackageVersionOrder = {
 
 /** Properties by which package version connections can be ordered. */
 export type PackageVersionOrderField =
-  /** Order package versions by creation time */
+/** Order package versions by creation time */
   'CREATED_AT';
 
 /** Represents a object that contains package version activity statistics such as downloads. */
@@ -19258,7 +19258,7 @@ export type PinnedEnvironmentOrder = {
 
 /** Properties by which pinned environments connections can be ordered */
 export type PinnedEnvironmentOrderField =
-  /** Order pinned environments by position */
+/** Order pinned environments by position */
   'POSITION';
 
 /** Represents a 'pinned' event on a given issue or pull request. */
@@ -20841,7 +20841,7 @@ export type ProjectV2ItemFieldValueOrder = {
 
 /** Properties by which project v2 item field value connections can be ordered. */
 export type ProjectV2ItemFieldValueOrderField =
-  /** Order project v2 item field values by the their position in the project */
+/** Order project v2 item field values by the their position in the project */
   'POSITION';
 
 /** Ordering options for project v2 item connections */
@@ -20854,7 +20854,7 @@ export type ProjectV2ItemOrder = {
 
 /** Properties by which project v2 item connections can be ordered. */
 export type ProjectV2ItemOrderField =
-  /** Order project v2 items by the their position in the project */
+/** Order project v2 items by the their position in the project */
   'POSITION';
 
 /** Represents a 'project_v2_item_status_changed' event on a given issue or pull request. */
@@ -21243,7 +21243,7 @@ export type ProjectV2StatusUpdateEdge = {
 
 /** Properties by which project v2 status updates can be ordered. */
 export type ProjectV2StatusUpdateOrderField =
-  /** Allows chronological ordering of project v2 status updates. */
+/** Allows chronological ordering of project v2 status updates. */
   'CREATED_AT';
 
 /** The possible statuses of a project v2. */
@@ -23638,7 +23638,7 @@ export type ReactionOrder = {
 
 /** A list of fields that reactions can be ordered by. */
 export type ReactionOrderField =
-  /** Allows ordering a list of reactions by when they were created. */
+/** Allows ordering a list of reactions by when they were created. */
   'CREATED_AT';
 
 /** Types that can be assigned to reactions. */
@@ -27847,7 +27847,7 @@ export type RepositoryInvitationOrder = {
 
 /** Properties by which repository invitation connections can be ordered. */
 export type RepositoryInvitationOrderField =
-  /** Order repository invitations by creation time */
+/** Order repository invitations by creation time */
   'CREATED_AT';
 
 /** The possible reasons a given repository could be in a locked state. */
@@ -27935,7 +27935,7 @@ export type RepositoryMigrationOrderDirection =
 
 /** Properties by which repository migrations can be ordered. */
 export type RepositoryMigrationOrderField =
-  /** Order mannequins why when they were created. */
+/** Order mannequins why when they were created. */
   'CREATED_AT';
 
 /** Parameters to be used for the repository_name condition */
@@ -29448,7 +29448,7 @@ export type SavedReplyOrder = {
 
 /** Properties by which saved reply connections can be ordered. */
 export type SavedReplyOrderField =
-  /** Order saved reply by when they were updated. */
+/** Order saved reply by when they were updated. */
   'UPDATED_AT';
 
 /** The results of a search. */
@@ -29794,7 +29794,7 @@ export type SecurityVulnerabilityOrder = {
 
 /** Properties by which security vulnerability connections can be ordered. */
 export type SecurityVulnerabilityOrderField =
-  /** Order vulnerability by update time */
+/** Order vulnerability by update time */
   'UPDATED_AT';
 
 /** Autogenerated input type of SetEnterpriseIdentityProvider */
@@ -30263,7 +30263,7 @@ export type SponsorableOrder = {
 
 /** Properties by which sponsorable connections can be ordered. */
 export type SponsorableOrderField =
-  /** Order sponsorable entities by login (username). */
+/** Order sponsorable entities by login (username). */
   'LOGIN';
 
 /** An event related to sponsorship activity. */
@@ -30338,7 +30338,7 @@ export type SponsorsActivityOrder = {
 
 /** Properties by which GitHub Sponsors activity connections can be ordered. */
 export type SponsorsActivityOrderField =
-  /** Order activities by when they happened. */
+/** Order activities by when they happened. */
   'TIMESTAMP';
 
 /** The possible time periods for which Sponsors activities can be requested. */
@@ -31237,7 +31237,7 @@ export type SponsorshipNewsletterOrder = {
 
 /** Properties by which sponsorship update connections can be ordered. */
 export type SponsorshipNewsletterOrderField =
-  /** Order sponsorship newsletters by when they were created. */
+/** Order sponsorship newsletters by when they were created. */
   'CREATED_AT';
 
 /** Ordering options for sponsorship connections. */
@@ -31250,7 +31250,7 @@ export type SponsorshipOrder = {
 
 /** Properties by which sponsorship connections can be ordered. */
 export type SponsorshipOrderField =
-  /** Order sponsorship by creation time. */
+/** Order sponsorship by creation time. */
   'CREATED_AT';
 
 /** How payment was made for funding a GitHub Sponsors sponsorship. */
@@ -31319,7 +31319,7 @@ export type StarOrder = {
 
 /** Properties by which star connections can be ordered. */
 export type StarOrderField =
-  /** Allows ordering a list of stars by when they were created. */
+/** Allows ordering a list of stars by when they were created. */
   'STARRED_AT';
 
 /** The connection type for User. */
@@ -32532,7 +32532,7 @@ export type TeamOrder = {
 
 /** Properties by which team connections can be ordered. */
 export type TeamOrderField =
-  /** Allows ordering a list of teams by name. */
+/** Allows ordering a list of teams by name. */
   'NAME';
 
 /** The possible team privacy values. */
@@ -36029,7 +36029,7 @@ export type UserStatusOrder = {
 
 /** Properties by which user status connections can be ordered. */
 export type UserStatusOrderField =
-  /** Order user statuses by when they were updated. */
+/** Order user statuses by when they were updated. */
   'UPDATED_AT';
 
 /** Whether a user being viewed contains public or private information. */
@@ -36314,7 +36314,7 @@ export type WorkflowRunOrder = {
 
 /** Properties by which workflow run connections can be ordered. */
 export type WorkflowRunOrderField =
-  /** Order workflow runs by most recently created */
+/** Order workflow runs by most recently created */
   'CREATED_AT';
 
 /** The possible states for a workflow. */
