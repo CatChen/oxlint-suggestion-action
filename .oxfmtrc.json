@@ -8,7 +8,9 @@
   "tabWidth": 2,
   "trailingComma": "all",
   "printWidth": 80,
-  "sortPackageJson": false,
+  "sortPackageJson": {
+    "sortScripts": true
+  },
   "ignorePatterns": ["dist/", "bundle/"],
   "sortImports": {
     "groups": [
