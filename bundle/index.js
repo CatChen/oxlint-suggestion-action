@@ -38173,6 +38173,15 @@ function getOctokit_getOctokit(githubToken) {
 }
 
 ;// CONCATENATED MODULE: ./src/getPullRequestMetadata.ts
+var getPullRequestMetadata_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 function getPullRequestMetadata() {
@@ -38195,29 +38204,31 @@ function getPullRequestMetadata() {
         headSha,
     };
 }
-async function getPullRequestMetadataByNumber(octokit, pullRequestNumber) {
-    const owner = github_context.repo.owner;
-    const repo = github_context.repo.repo;
-    const response = await octokit.rest.pulls.get({
-        owner,
-        repo,
-        pull_number: pullRequestNumber,
+function getPullRequestMetadataByNumber(octokit, pullRequestNumber) {
+    return getPullRequestMetadata_awaiter(this, void 0, void 0, function* () {
+        const owner = github_context.repo.owner;
+        const repo = github_context.repo.repo;
+        const response = yield octokit.rest.pulls.get({
+            owner,
+            repo,
+            pull_number: pullRequestNumber,
+        });
+        const pullRequest = response.data;
+        const baseSha = pullRequest.base.sha;
+        const headSha = pullRequest.head.sha;
+        info(`Owner: ${owner}`);
+        info(`Repo: ${repo}`);
+        info(`Pull Request number: ${pullRequestNumber}`);
+        info(`Base SHA: ${baseSha}`);
+        info(`Head SHA: ${headSha}`);
+        return {
+            owner,
+            repo,
+            pullRequestNumber,
+            baseSha,
+            headSha,
+        };
     });
-    const pullRequest = response.data;
-    const baseSha = pullRequest.base.sha;
-    const headSha = pullRequest.head.sha;
-    info(`Owner: ${owner}`);
-    info(`Repo: ${repo}`);
-    info(`Pull Request number: ${pullRequestNumber}`);
-    info(`Base SHA: ${baseSha}`);
-    info(`Head SHA: ${headSha}`);
-    return {
-        owner,
-        repo,
-        pullRequestNumber,
-        baseSha,
-        headSha,
-    };
 }
 
 ;// CONCATENATED MODULE: ./src/getPushMetadata.ts
@@ -38381,6 +38392,15 @@ function getIndexedModifiedLines(patch) {
 }
 
 ;// CONCATENATED MODULE: ./src/pullRequest.ts
+var pullRequest_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 
@@ -38430,81 +38450,91 @@ const unresolveReviewThreadMutation = gql_graphql(`
     }
   }
 `);
-async function getPullRequestFiles(octokit, owner, repo, pullRequestNumber) {
-    const files = await octokit.paginate(octokit.rest.pulls.listFiles, {
-        owner,
-        repo,
-        pull_number: pullRequestNumber,
-        per_page: 100,
+function getPullRequestFiles(octokit, owner, repo, pullRequestNumber) {
+    return pullRequest_awaiter(this, void 0, void 0, function* () {
+        const files = yield octokit.paginate(octokit.rest.pulls.listFiles, {
+            owner,
+            repo,
+            pull_number: pullRequestNumber,
+            per_page: 100,
+        });
+        info(`Files: (${files.length})`);
+        return files;
     });
-    info(`Files: (${files.length})`);
-    return files;
 }
-async function getReviewComments(octokit, owner, repo, pullRequestNumber) {
-    const reviews = await octokit.paginate(octokit.rest.pulls.listReviews, {
-        owner,
-        repo,
-        pull_number: pullRequestNumber,
-        per_page: 100,
+function getReviewComments(octokit, owner, repo, pullRequestNumber) {
+    return pullRequest_awaiter(this, void 0, void 0, function* () {
+        const reviews = yield octokit.paginate(octokit.rest.pulls.listReviews, {
+            owner,
+            repo,
+            pull_number: pullRequestNumber,
+            per_page: 100,
+        });
+        const reviewComments = yield octokit.paginate(octokit.rest.pulls.listReviewComments, {
+            owner,
+            repo,
+            pull_number: pullRequestNumber,
+            per_page: 100,
+        });
+        const relevantReviews = reviews.filter((review) => { var _a; return ((_a = review.user) === null || _a === void 0 ? void 0 : _a.id) === GITHUB_ACTIONS_BOT_ID && review.body === REVIEW_BODY; });
+        const relevantReviewIds = relevantReviews.map((review) => review.id);
+        const relevantReviewComments = reviewComments.filter((reviewComment) => reviewComment.user.id === GITHUB_ACTIONS_BOT_ID &&
+            reviewComment.pull_request_review_id !== null &&
+            relevantReviewIds.includes(reviewComment.pull_request_review_id));
+        info(`Existing review comments: (${relevantReviewComments.length})`);
+        return relevantReviewComments;
     });
-    const reviewComments = await octokit.paginate(octokit.rest.pulls.listReviewComments, {
-        owner,
-        repo,
-        pull_number: pullRequestNumber,
-        per_page: 100,
-    });
-    const relevantReviews = reviews.filter((review) => { var _a; return ((_a = review.user) === null || _a === void 0 ? void 0 : _a.id) === GITHUB_ACTIONS_BOT_ID && review.body === REVIEW_BODY; });
-    const relevantReviewIds = relevantReviews.map((review) => review.id);
-    const relevantReviewComments = reviewComments.filter((reviewComment) => reviewComment.user.id === GITHUB_ACTIONS_BOT_ID &&
-        reviewComment.pull_request_review_id !== null &&
-        relevantReviewIds.includes(reviewComment.pull_request_review_id));
-    info(`Existing review comments: (${relevantReviewComments.length})`);
-    return relevantReviewComments;
 }
-async function getReviewThreads(octokit, owner, repo, pullRequestNumber) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
-    const commentNodeIdToReviewThreadMapping = {};
-    const queryData = await octokit.graphql(getReviewThreadsQuery.toString(), {
-        owner,
-        repo,
-        pullRequestNumber,
-    });
-    const reviewThreadTotalCount = (_c = (_b = (_a = queryData === null || queryData === void 0 ? void 0 : queryData.repository) === null || _a === void 0 ? void 0 : _a.pullRequest) === null || _b === void 0 ? void 0 : _b.reviewThreads) === null || _c === void 0 ? void 0 : _c.totalCount;
-    if (reviewThreadTotalCount !== undefined && reviewThreadTotalCount > 100) {
-        error(`There are more than 100 review threads: ${reviewThreadTotalCount}`);
-    }
-    const reviewThreads = (_f = (_e = (_d = queryData === null || queryData === void 0 ? void 0 : queryData.repository) === null || _d === void 0 ? void 0 : _d.pullRequest) === null || _e === void 0 ? void 0 : _e.reviewThreads) === null || _f === void 0 ? void 0 : _f.nodes;
-    if (reviewThreads !== undefined && reviewThreads !== null) {
-        for (const reviewThread of reviewThreads) {
-            if (reviewThread === null) {
-                continue;
-            }
-            const commentTotalCount = (_g = reviewThread === null || reviewThread === void 0 ? void 0 : reviewThread.comments) === null || _g === void 0 ? void 0 : _g.totalCount;
-            if (commentTotalCount !== undefined && commentTotalCount > 100) {
-                error(`There are more than 100 review comments in review thread ${reviewThread === null || reviewThread === void 0 ? void 0 : reviewThread.id}: ${commentTotalCount}`);
-            }
-            const comments = (_h = reviewThread === null || reviewThread === void 0 ? void 0 : reviewThread.comments) === null || _h === void 0 ? void 0 : _h.nodes;
-            if (comments !== undefined && comments !== null) {
-                for (const comment of comments) {
-                    const commentId = comment === null || comment === void 0 ? void 0 : comment.id;
-                    if (commentId === undefined || commentId === null) {
-                        continue;
+function getReviewThreads(octokit, owner, repo, pullRequestNumber) {
+    return pullRequest_awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        const commentNodeIdToReviewThreadMapping = {};
+        const queryData = yield octokit.graphql(getReviewThreadsQuery.toString(), {
+            owner,
+            repo,
+            pullRequestNumber,
+        });
+        const reviewThreadTotalCount = (_c = (_b = (_a = queryData === null || queryData === void 0 ? void 0 : queryData.repository) === null || _a === void 0 ? void 0 : _a.pullRequest) === null || _b === void 0 ? void 0 : _b.reviewThreads) === null || _c === void 0 ? void 0 : _c.totalCount;
+        if (reviewThreadTotalCount !== undefined && reviewThreadTotalCount > 100) {
+            error(`There are more than 100 review threads: ${reviewThreadTotalCount}`);
+        }
+        const reviewThreads = (_f = (_e = (_d = queryData === null || queryData === void 0 ? void 0 : queryData.repository) === null || _d === void 0 ? void 0 : _d.pullRequest) === null || _e === void 0 ? void 0 : _e.reviewThreads) === null || _f === void 0 ? void 0 : _f.nodes;
+        if (reviewThreads !== undefined && reviewThreads !== null) {
+            for (const reviewThread of reviewThreads) {
+                if (reviewThread === null) {
+                    continue;
+                }
+                const commentTotalCount = (_g = reviewThread === null || reviewThread === void 0 ? void 0 : reviewThread.comments) === null || _g === void 0 ? void 0 : _g.totalCount;
+                if (commentTotalCount !== undefined && commentTotalCount > 100) {
+                    error(`There are more than 100 review comments in review thread ${reviewThread === null || reviewThread === void 0 ? void 0 : reviewThread.id}: ${commentTotalCount}`);
+                }
+                const comments = (_h = reviewThread === null || reviewThread === void 0 ? void 0 : reviewThread.comments) === null || _h === void 0 ? void 0 : _h.nodes;
+                if (comments !== undefined && comments !== null) {
+                    for (const comment of comments) {
+                        const commentId = comment === null || comment === void 0 ? void 0 : comment.id;
+                        if (commentId === undefined || commentId === null) {
+                            continue;
+                        }
+                        commentNodeIdToReviewThreadMapping[commentId] = reviewThread;
                     }
-                    commentNodeIdToReviewThreadMapping[commentId] = reviewThread;
                 }
             }
         }
-    }
-    return commentNodeIdToReviewThreadMapping;
-}
-async function resolveReviewThread(octokit, nodeId) {
-    await octokit.graphql(resolveReviewThreadMutation.toString(), {
-        nodeId,
+        return commentNodeIdToReviewThreadMapping;
     });
 }
-async function unresolveReviewThread(octokit, nodeId) {
-    await octokit.graphql(unresolveReviewThreadMutation.toString(), {
-        nodeId,
+function resolveReviewThread(octokit, nodeId) {
+    return pullRequest_awaiter(this, void 0, void 0, function* () {
+        yield octokit.graphql(resolveReviewThreadMutation.toString(), {
+            nodeId,
+        });
+    });
+}
+function unresolveReviewThread(octokit, nodeId) {
+    return pullRequest_awaiter(this, void 0, void 0, function* () {
+        yield octokit.graphql(unresolveReviewThreadMutation.toString(), {
+            nodeId,
+        });
     });
 }
 function getReviewCommentFromDiagnostic(diagnostic, line, path) {
@@ -38533,115 +38563,126 @@ function matchReviewComments(reviewComments, reviewComment) {
     }
     return matchedNodeIds;
 }
-async function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber, headSha, failCheck, requestChanges) {
-    var _a, _b, _c;
-    var _d;
-    startGroup('GitHub Pull Request');
-    const files = await getPullRequestFiles(octokit, owner, repo, pullRequestNumber);
-    const existingReviewComments = await getReviewComments(octokit, owner, repo, pullRequestNumber);
-    const commentNodeIdToReviewThreadMapping = await getReviewThreads(octokit, owner, repo, pullRequestNumber);
-    const indexedDiagnostics = {};
-    for (const diagnostic of diagnostics) {
-        (_a = indexedDiagnostics[_d = diagnostic.filename]) !== null && _a !== void 0 ? _a : (indexedDiagnostics[_d] = []);
-        (_b = indexedDiagnostics[diagnostic.filename]) === null || _b === void 0 ? void 0 : _b.push(diagnostic);
-    }
-    let commentsCounter = 0;
-    let outOfScopeResultsCounter = 0;
-    const reviewComments = [];
-    const matchedReviewCommentNodeIds = {};
-    for (const file of files) {
-        info(`  File name: ${file.filename}`);
-        info(`  File status: ${file.status}`);
-        if (file.status === 'removed') {
-            continue;
+function handlePullRequest(octokit, diagnostics, owner, repo, pullRequestNumber, headSha, failCheck, requestChanges) {
+    return pullRequest_awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c;
+        var _d;
+        startGroup('GitHub Pull Request');
+        const files = yield getPullRequestFiles(octokit, owner, repo, pullRequestNumber);
+        const existingReviewComments = yield getReviewComments(octokit, owner, repo, pullRequestNumber);
+        const commentNodeIdToReviewThreadMapping = yield getReviewThreads(octokit, owner, repo, pullRequestNumber);
+        const indexedDiagnostics = {};
+        for (const diagnostic of diagnostics) {
+            (_a = indexedDiagnostics[_d = diagnostic.filename]) !== null && _a !== void 0 ? _a : (indexedDiagnostics[_d] = []);
+            (_b = indexedDiagnostics[diagnostic.filename]) === null || _b === void 0 ? void 0 : _b.push(diagnostic);
         }
-        const indexedModifiedLines = getIndexedModifiedLines(file.patch);
-        const fileDiagnostics = (_c = indexedDiagnostics[file.filename]) !== null && _c !== void 0 ? _c : [];
-        for (const diagnostic of fileDiagnostics) {
-            const lines = getDiagnosticLines(diagnostic);
-            for (const line of lines) {
-                if (indexedModifiedLines[line]) {
-                    info(`  Matched line: ${line}`);
-                    const reviewComment = getReviewCommentFromDiagnostic(diagnostic, line, file.filename);
-                    const matchedComments = matchReviewComments(existingReviewComments, reviewComment);
-                    commentsCounter++;
-                    if (matchedComments.length === 0) {
-                        reviewComments.push(reviewComment);
-                        info(`    Comment queued`);
+        let commentsCounter = 0;
+        let outOfScopeResultsCounter = 0;
+        const reviewComments = [];
+        const matchedReviewCommentNodeIds = {};
+        for (const file of files) {
+            info(`  File name: ${file.filename}`);
+            info(`  File status: ${file.status}`);
+            if (file.status === 'removed') {
+                continue;
+            }
+            const indexedModifiedLines = getIndexedModifiedLines(file.patch);
+            const fileDiagnostics = (_c = indexedDiagnostics[file.filename]) !== null && _c !== void 0 ? _c : [];
+            for (const diagnostic of fileDiagnostics) {
+                const lines = getDiagnosticLines(diagnostic);
+                for (const line of lines) {
+                    if (indexedModifiedLines[line]) {
+                        info(`  Matched line: ${line}`);
+                        const reviewComment = getReviewCommentFromDiagnostic(diagnostic, line, file.filename);
+                        const matchedComments = matchReviewComments(existingReviewComments, reviewComment);
+                        commentsCounter++;
+                        if (matchedComments.length === 0) {
+                            reviewComments.push(reviewComment);
+                            info(`    Comment queued`);
+                        }
+                        else {
+                            for (const nodeId of matchedComments) {
+                                matchedReviewCommentNodeIds[nodeId] = true;
+                            }
+                            info(`    Comment skipped`);
+                        }
                     }
                     else {
-                        for (const nodeId of matchedComments) {
-                            matchedReviewCommentNodeIds[nodeId] = true;
-                        }
-                        info(`    Comment skipped`);
+                        outOfScopeResultsCounter++;
+                        info(`  Out of scope line: ${line}`);
                     }
                 }
+            }
+        }
+        endGroup();
+        startGroup('Feedback');
+        for (const reviewComment of existingReviewComments) {
+            const reviewThread = commentNodeIdToReviewThreadMapping[reviewComment.node_id];
+            if (reviewThread !== undefined) {
+                if (matchedReviewCommentNodeIds[reviewComment.node_id] &&
+                    reviewThread.isResolved) {
+                    yield unresolveReviewThread(octokit, reviewThread.id);
+                    info(`Review comment unresolved: ${reviewComment.url}`);
+                }
+                else if (!matchedReviewCommentNodeIds[reviewComment.node_id] &&
+                    !reviewThread.isResolved) {
+                    yield resolveReviewThread(octokit, reviewThread.id);
+                    info(`Review comment resolved: ${reviewComment.url}`);
+                }
                 else {
-                    outOfScopeResultsCounter++;
-                    info(`  Out of scope line: ${line}`);
+                    info(`Review comment remains ${reviewThread.isResolved ? 'resolved' : 'unresolved'}: ${reviewComment.url}`);
                 }
             }
-        }
-    }
-    endGroup();
-    startGroup('Feedback');
-    for (const reviewComment of existingReviewComments) {
-        const reviewThread = commentNodeIdToReviewThreadMapping[reviewComment.node_id];
-        if (reviewThread !== undefined) {
-            if (matchedReviewCommentNodeIds[reviewComment.node_id] &&
-                reviewThread.isResolved) {
-                await unresolveReviewThread(octokit, reviewThread.id);
-                info(`Review comment unresolved: ${reviewComment.url}`);
+            else {
+                error(`Review comment has no associated review thread: ${reviewComment.url}`);
             }
-            else if (!matchedReviewCommentNodeIds[reviewComment.node_id] &&
-                !reviewThread.isResolved) {
-                await resolveReviewThread(octokit, reviewThread.id);
-                info(`Review comment resolved: ${reviewComment.url}`);
+        }
+        if (outOfScopeResultsCounter > 0) {
+            info(`Out of scope results: ${outOfScopeResultsCounter}`);
+        }
+        if (commentsCounter > 0) {
+            try {
+                yield octokit.rest.pulls.createReview({
+                    owner,
+                    repo,
+                    body: REVIEW_BODY,
+                    pull_number: pullRequestNumber,
+                    commit_id: headSha,
+                    event: requestChanges ? 'REQUEST_CHANGES' : 'COMMENT',
+                    comments: reviewComments,
+                });
+            }
+            catch (_e) {
+                throw new Error(`Failed to create review with ${reviewComments.length} comment(s).`);
+            }
+            if (commentsCounter - reviewComments.length > 0) {
+                info(`Review comments existed and skipped: ${commentsCounter - reviewComments.length}`);
+            }
+            info(`Review comments submitted: ${reviewComments.length}`);
+            if (failCheck) {
+                throw new Error('Oxlint fails. Please review comments.');
             }
             else {
-                info(`Review comment remains ${reviewThread.isResolved ? 'resolved' : 'unresolved'}: ${reviewComment.url}`);
+                error('Oxlint fails');
             }
         }
         else {
-            error(`Review comment has no associated review thread: ${reviewComment.url}`);
+            notice('Oxlint passes');
         }
-    }
-    if (outOfScopeResultsCounter > 0) {
-        info(`Out of scope results: ${outOfScopeResultsCounter}`);
-    }
-    if (commentsCounter > 0) {
-        try {
-            await octokit.rest.pulls.createReview({
-                owner,
-                repo,
-                body: REVIEW_BODY,
-                pull_number: pullRequestNumber,
-                commit_id: headSha,
-                event: requestChanges ? 'REQUEST_CHANGES' : 'COMMENT',
-                comments: reviewComments,
-            });
-        }
-        catch (_e) {
-            throw new Error(`Failed to create review with ${reviewComments.length} comment(s).`);
-        }
-        if (commentsCounter - reviewComments.length > 0) {
-            info(`Review comments existed and skipped: ${commentsCounter - reviewComments.length}`);
-        }
-        info(`Review comments submitted: ${reviewComments.length}`);
-        if (failCheck) {
-            throw new Error('Oxlint fails. Please review comments.');
-        }
-        else {
-            error('Oxlint fails');
-        }
-    }
-    else {
-        notice('Oxlint passes');
-    }
-    endGroup();
+        endGroup();
+    });
 }
 
 ;// CONCATENATED MODULE: ./src/getPushFiles.ts
+var getPushFiles_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 function getStatus(statusToken) {
@@ -38729,144 +38770,159 @@ function extractPatches(diffOutput, filenames) {
     }
     return patchesByFilename;
 }
-async function ensureCommitExists(sha) {
-    try {
-        await getExecOutput('git', ['cat-file', '-e', `${sha}^{commit}`]);
-        return true;
-    }
-    catch (_a) {
-        return false;
-    }
+function ensureCommitExists(sha) {
+    return getPushFiles_awaiter(this, void 0, void 0, function* () {
+        try {
+            yield getExecOutput('git', ['cat-file', '-e', `${sha}^{commit}`]);
+            return true;
+        }
+        catch (_a) {
+            return false;
+        }
+    });
 }
-async function getPushFiles(beforeSha, afterSha) {
-    const [beforeExists, afterExists] = await Promise.all([
-        ensureCommitExists(beforeSha),
-        ensureCommitExists(afterSha),
-    ]);
-    if (!beforeExists || !afterExists) {
-        info(`Fetching commits for push range ${beforeSha}..${afterSha}`);
-        await getExecOutput('git', [
-            'fetch',
-            '--no-tags',
-            '--depth=1',
-            'origin',
-            beforeSha,
-            afterSha,
+function getPushFiles(beforeSha, afterSha) {
+    return getPushFiles_awaiter(this, void 0, void 0, function* () {
+        const [beforeExists, afterExists] = yield Promise.all([
+            ensureCommitExists(beforeSha),
+            ensureCommitExists(afterSha),
         ]);
-    }
-    const nameStatusResult = await getExecOutput('git', [
-        '-c',
-        'core.quotepath=false',
-        'diff',
-        '--name-status',
-        '--find-renames',
-        `${beforeSha}..${afterSha}`,
-    ], {
-        silent: true,
+        if (!beforeExists || !afterExists) {
+            info(`Fetching commits for push range ${beforeSha}..${afterSha}`);
+            yield getExecOutput('git', [
+                'fetch',
+                '--no-tags',
+                '--depth=1',
+                'origin',
+                beforeSha,
+                afterSha,
+            ]);
+        }
+        const nameStatusResult = yield getExecOutput('git', [
+            '-c',
+            'core.quotepath=false',
+            'diff',
+            '--name-status',
+            '--find-renames',
+            `${beforeSha}..${afterSha}`,
+        ], {
+            silent: true,
+        });
+        const files = parseFileStatus(nameStatusResult.stdout);
+        info(`Files: (${files.length})`);
+        const patchResult = yield getExecOutput('git', [
+            '-c',
+            'core.quotepath=false',
+            'diff',
+            '--unified=0',
+            '--no-color',
+            '--no-ext-diff',
+            '--find-renames',
+            `${beforeSha}..${afterSha}`,
+        ], {
+            silent: true,
+        });
+        const patches = extractPatches(patchResult.stdout, files.map((file) => file.filename));
+        for (const file of files) {
+            file.patch = patches[file.filename];
+        }
+        return files;
     });
-    const files = parseFileStatus(nameStatusResult.stdout);
-    info(`Files: (${files.length})`);
-    const patchResult = await getExecOutput('git', [
-        '-c',
-        'core.quotepath=false',
-        'diff',
-        '--unified=0',
-        '--no-color',
-        '--no-ext-diff',
-        '--find-renames',
-        `${beforeSha}..${afterSha}`,
-    ], {
-        silent: true,
-    });
-    const patches = extractPatches(patchResult.stdout, files.map((file) => file.filename));
-    for (const file of files) {
-        file.patch = patches[file.filename];
-    }
-    return files;
 }
 
 ;// CONCATENATED MODULE: ./src/push.ts
+var push_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 
 
 
 const ZERO_SHA = '0000000000000000000000000000000000000000';
-async function handlePush(diagnostics, beforeSha, afterSha, created, deleted, failCheck) {
-    var _a, _b;
-    var _c;
-    startGroup('GitHub Push');
-    if (created || deleted || beforeSha === ZERO_SHA || afterSha === ZERO_SHA) {
-        info(`Skipped comparing files in the push`);
-        info(`  Created: ${created}`);
-        info(`  Deleted: ${deleted}`);
-        info(`  Before SHA: ${beforeSha}`);
-        info(`  After SHA: ${afterSha}`);
-        endGroup();
-        return;
-    }
-    const files = await getPushFiles(beforeSha, afterSha);
-    if (files.length === 0) {
-        info(`Push contains no files`);
-        endGroup();
-        return;
-    }
-    const indexedDiagnostics = {};
-    for (const diagnostic of diagnostics) {
-        (_a = indexedDiagnostics[_c = diagnostic.filename]) !== null && _a !== void 0 ? _a : (indexedDiagnostics[_c] = []);
-        (_b = indexedDiagnostics[diagnostic.filename]) === null || _b === void 0 ? void 0 : _b.push(diagnostic);
-    }
-    let warningCounter = 0;
-    let errorCounter = 0;
-    for (const file of files) {
-        info(`  File name: ${file.filename}`);
-        info(`  File status: ${file.status}`);
-        if (file.status === 'removed') {
-            continue;
+function handlePush(diagnostics, beforeSha, afterSha, created, deleted, failCheck) {
+    return push_awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
+        var _c;
+        startGroup('GitHub Push');
+        if (created || deleted || beforeSha === ZERO_SHA || afterSha === ZERO_SHA) {
+            info(`Skipped comparing files in the push`);
+            info(`  Created: ${created}`);
+            info(`  Deleted: ${deleted}`);
+            info(`  Before SHA: ${beforeSha}`);
+            info(`  After SHA: ${afterSha}`);
+            endGroup();
+            return;
         }
-        const indexedModifiedLines = getIndexedModifiedLines(file.patch);
-        const fileDiagnostics = indexedDiagnostics[file.filename];
-        if (fileDiagnostics) {
-            for (const diagnostic of fileDiagnostics) {
-                const lines = getDiagnosticLines(diagnostic);
-                for (const line of lines) {
-                    if (indexedModifiedLines[line]) {
-                        info(`  Matched line: ${line}`);
-                        switch (diagnostic.severity) {
-                            case 'warning':
-                                warning(getDiagnosticMessage(diagnostic), {
-                                    file: file.filename,
-                                    startLine: line,
-                                });
-                                warningCounter++;
-                                break;
-                            case 'error':
-                                error(getDiagnosticMessage(diagnostic), {
-                                    file: file.filename,
-                                    startLine: line,
-                                });
-                                errorCounter++;
-                                break;
+        const files = yield getPushFiles(beforeSha, afterSha);
+        if (files.length === 0) {
+            info(`Push contains no files`);
+            endGroup();
+            return;
+        }
+        const indexedDiagnostics = {};
+        for (const diagnostic of diagnostics) {
+            (_a = indexedDiagnostics[_c = diagnostic.filename]) !== null && _a !== void 0 ? _a : (indexedDiagnostics[_c] = []);
+            (_b = indexedDiagnostics[diagnostic.filename]) === null || _b === void 0 ? void 0 : _b.push(diagnostic);
+        }
+        let warningCounter = 0;
+        let errorCounter = 0;
+        for (const file of files) {
+            info(`  File name: ${file.filename}`);
+            info(`  File status: ${file.status}`);
+            if (file.status === 'removed') {
+                continue;
+            }
+            const indexedModifiedLines = getIndexedModifiedLines(file.patch);
+            const fileDiagnostics = indexedDiagnostics[file.filename];
+            if (fileDiagnostics) {
+                for (const diagnostic of fileDiagnostics) {
+                    const lines = getDiagnosticLines(diagnostic);
+                    for (const line of lines) {
+                        if (indexedModifiedLines[line]) {
+                            info(`  Matched line: ${line}`);
+                            switch (diagnostic.severity) {
+                                case 'warning':
+                                    warning(getDiagnosticMessage(diagnostic), {
+                                        file: file.filename,
+                                        startLine: line,
+                                    });
+                                    warningCounter++;
+                                    break;
+                                case 'error':
+                                    error(getDiagnosticMessage(diagnostic), {
+                                        file: file.filename,
+                                        startLine: line,
+                                    });
+                                    errorCounter++;
+                                    break;
+                            }
                         }
                     }
                 }
             }
         }
-    }
-    endGroup();
-    startGroup('Feedback');
-    if (warningCounter > 0 || errorCounter > 0) {
-        if (failCheck) {
-            throw new Error('Oxlint fails. Please review comments.');
+        endGroup();
+        startGroup('Feedback');
+        if (warningCounter > 0 || errorCounter > 0) {
+            if (failCheck) {
+                throw new Error('Oxlint fails. Please review comments.');
+            }
+            else {
+                error('Oxlint fails');
+            }
         }
         else {
-            error('Oxlint fails');
+            notice('Oxlint passes');
         }
-    }
-    else {
-        notice('Oxlint passes');
-    }
-    endGroup();
+        endGroup();
+    });
 }
 
 ;// CONCATENATED MODULE: external "node:fs"
@@ -38889,107 +38945,131 @@ globstar while`,t,d,e,f,m),this.matchOne(t.slice(d),e.slice(f),s))return this.de
 //# sourceMappingURL=index.min.js.map
 
 ;// CONCATENATED MODULE: ./src/runOxlint.ts
-
-
-
-
-
-
-async function runOxlint({ oxlintBinPath, targets, configPath, }) {
-    const absoluteOxlintBinPath = (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), oxlintBinPath);
-    if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteOxlintBinPath)) {
-        throw new Error(`Oxlint binary cannot be found at ${absoluteOxlintBinPath}`);
-    }
-    notice(`Using Oxlint from: ${absoluteOxlintBinPath}`);
-    const args = [...ts(targets), '--format=json'];
-    const absoluteConfigPath = configPath ? (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), configPath) : null;
-    if (absoluteConfigPath) {
-        if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteConfigPath)) {
-            throw new Error(`Oxlint config cannot be found at ${absoluteConfigPath}`);
-        }
-        notice(`Using Oxlint config from: ${absoluteConfigPath}`);
-        args.push(`--config=${absoluteConfigPath}`);
-    }
-    const oxlintOutput = await getExecOutput(absoluteOxlintBinPath, args, {
-        ignoreReturnCode: true,
-        silent: true,
+var runOxlint_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-    return oxlintOutput.stdout;
+};
+
+
+
+
+
+
+function runOxlint(_a) {
+    return runOxlint_awaiter(this, arguments, void 0, function* ({ oxlintBinPath, targets, configPath, }) {
+        const absoluteOxlintBinPath = (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), oxlintBinPath);
+        if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteOxlintBinPath)) {
+            throw new Error(`Oxlint binary cannot be found at ${absoluteOxlintBinPath}`);
+        }
+        notice(`Using Oxlint from: ${absoluteOxlintBinPath}`);
+        const args = [...ts(targets), '--format=json'];
+        const absoluteConfigPath = configPath ? (0,external_node_path_namespaceObject.resolve)((0,external_node_process_namespaceObject.cwd)(), configPath) : null;
+        if (absoluteConfigPath) {
+            if (!(0,external_node_fs_namespaceObject.existsSync)(absoluteConfigPath)) {
+                throw new Error(`Oxlint config cannot be found at ${absoluteConfigPath}`);
+            }
+            notice(`Using Oxlint config from: ${absoluteConfigPath}`);
+            args.push(`--config=${absoluteConfigPath}`);
+        }
+        const oxlintOutput = yield getExecOutput(absoluteOxlintBinPath, args, {
+            ignoreReturnCode: true,
+            silent: true,
+        });
+        return oxlintOutput.stdout;
+    });
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
-
-
-
-
-
-
-
-
-
-
-
-async function oxlintSuggestion({ requestChanges, failCheck, githubToken, directory, targets, oxlintBinPath, configPath, }) {
-    startGroup('Oxlint');
-    changeDirectory(directory);
-    const output = await runOxlint({
-        oxlintBinPath,
-        targets,
-        configPath,
+var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-    const parsedOutput = parseOxlintOutput(output);
-    endGroup();
-    const octokit = getOctokit_getOctokit(githubToken);
-    info(`Event name: ${github_context.eventName}`);
-    switch (github_context.eventName) {
-        case 'pull_request':
-        case 'pull_request_target':
-            await (async () => {
-                const { owner, repo, pullRequestNumber, headSha } = getPullRequestMetadata();
-                await handlePullRequest(octokit, parsedOutput.diagnostics, owner, repo, pullRequestNumber, headSha, failCheck, requestChanges);
-            })();
-            break;
-        case 'push':
-            await (async () => {
-                const { beforeSha, afterSha, created, deleted } = getPushMetadata();
-                await handlePush(parsedOutput.diagnostics, beforeSha, afterSha, created, deleted, failCheck);
-            })();
-            break;
-        case 'workflow_run':
-            await (async () => {
-                const workflowRun = github_context.payload;
-                if (workflowRun.workflow_run.pull_requests.length > 0) {
-                    for (const pullRequest of workflowRun.workflow_run.pull_requests) {
-                        const { owner, repo, pullRequestNumber, headSha } = await getPullRequestMetadataByNumber(octokit, pullRequest.number);
-                        await handlePullRequest(octokit, parsedOutput.diagnostics, owner, repo, pullRequestNumber, headSha, failCheck, requestChanges);
+};
+
+
+
+
+
+
+
+
+
+
+
+function oxlintSuggestion(_a) {
+    return src_awaiter(this, arguments, void 0, function* ({ requestChanges, failCheck, githubToken, directory, targets, oxlintBinPath, configPath, }) {
+        startGroup('Oxlint');
+        changeDirectory(directory);
+        const output = yield runOxlint({
+            oxlintBinPath,
+            targets,
+            configPath,
+        });
+        const parsedOutput = parseOxlintOutput(output);
+        endGroup();
+        const octokit = getOctokit_getOctokit(githubToken);
+        info(`Event name: ${github_context.eventName}`);
+        switch (github_context.eventName) {
+            case 'pull_request':
+            case 'pull_request_target':
+                yield (() => src_awaiter(this, void 0, void 0, function* () {
+                    const { owner, repo, pullRequestNumber, headSha } = getPullRequestMetadata();
+                    yield handlePullRequest(octokit, parsedOutput.diagnostics, owner, repo, pullRequestNumber, headSha, failCheck, requestChanges);
+                }))();
+                break;
+            case 'push':
+                yield (() => src_awaiter(this, void 0, void 0, function* () {
+                    const { beforeSha, afterSha, created, deleted } = getPushMetadata();
+                    yield handlePush(parsedOutput.diagnostics, beforeSha, afterSha, created, deleted, failCheck);
+                }))();
+                break;
+            case 'workflow_run':
+                yield (() => src_awaiter(this, void 0, void 0, function* () {
+                    const workflowRun = github_context.payload;
+                    if (workflowRun.workflow_run.pull_requests.length > 0) {
+                        for (const pullRequest of workflowRun.workflow_run.pull_requests) {
+                            const { owner, repo, pullRequestNumber, headSha } = yield getPullRequestMetadataByNumber(octokit, pullRequest.number);
+                            yield handlePullRequest(octokit, parsedOutput.diagnostics, owner, repo, pullRequestNumber, headSha, failCheck, requestChanges);
+                        }
                     }
-                }
-                else {
-                    const workflowSourceEventName = workflowRun.workflow_run.event
-                        .split('_')
-                        .map((word) => { var _a; return ((_a = word[0]) === null || _a === void 0 ? void 0 : _a.toUpperCase()) + word.substring(1); })
-                        .join(' ');
-                    handleCommit(`Workflow (${workflowSourceEventName})`, parsedOutput.diagnostics, failCheck);
-                }
-            })();
-            break;
-        default:
-            handleCommit(github_context.eventName
-                .split('_')
-                .map((word) => { var _a; return ((_a = word[0]) === null || _a === void 0 ? void 0 : _a.toUpperCase()) + word.substring(1); })
-                .join(' '), parsedOutput.diagnostics, failCheck);
-            break;
-    }
+                    else {
+                        const workflowSourceEventName = workflowRun.workflow_run.event
+                            .split('_')
+                            .map((word) => { var _a; return ((_a = word[0]) === null || _a === void 0 ? void 0 : _a.toUpperCase()) + word.substring(1); })
+                            .join(' ');
+                        handleCommit(`Workflow (${workflowSourceEventName})`, parsedOutput.diagnostics, failCheck);
+                    }
+                }))();
+                break;
+            default:
+                handleCommit(github_context.eventName
+                    .split('_')
+                    .map((word) => { var _a; return ((_a = word[0]) === null || _a === void 0 ? void 0 : _a.toUpperCase()) + word.substring(1); })
+                    .join(' '), parsedOutput.diagnostics, failCheck);
+                break;
+        }
+    });
 }
-async function run() {
-    await oxlintSuggestion({
-        requestChanges: getBooleanInput('request-changes'),
-        failCheck: getBooleanInput('fail-check'),
-        githubToken: getInput('github-token'),
-        directory: getInput('directory'),
-        targets: getInput('targets'),
-        oxlintBinPath: getInput('oxlint-bin-path'),
-        configPath: getInput('config-path'),
+function run() {
+    return src_awaiter(this, void 0, void 0, function* () {
+        yield oxlintSuggestion({
+            requestChanges: getBooleanInput('request-changes'),
+            failCheck: getBooleanInput('fail-check'),
+            githubToken: getInput('github-token'),
+            directory: getInput('directory'),
+            targets: getInput('targets'),
+            oxlintBinPath: getInput('oxlint-bin-path'),
+            configPath: getInput('config-path'),
+        });
     });
 }
 run().catch((error) => setFailed(error));
