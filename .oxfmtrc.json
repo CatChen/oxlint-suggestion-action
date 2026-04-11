@@ -11,7 +11,7 @@
   "sortPackageJson": {
     "sortScripts": true
   },
-  "ignorePatterns": ["dist/", "bundle/"],
+  "ignorePatterns": ["dist/", "bundle/", "tests/javascript/"],
   "sortImports": {
     "groups": [
       "builtin",

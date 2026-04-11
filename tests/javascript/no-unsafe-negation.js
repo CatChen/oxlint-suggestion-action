@@ -1,5 +1,5 @@
-if ((!key) in object) {
+if (!key in object) {
 }
 
-if ((!obj) instanceof Ctor) {
+if (!obj instanceof Ctor) {
 }
