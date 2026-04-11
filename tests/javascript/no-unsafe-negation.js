@@ -1,5 +1,7 @@
-if ((!key) in object) {
+// prettier-ignore
+if (!key in object) {
 }
 
-if ((!obj) instanceof Ctor) {
+// prettier-ignore
+if (!obj instanceof Ctor) {
 }
