@@ -5,6 +5,7 @@
     "dist",
     "bundle",
     "src/__graphql__",
-    "schema.graphql"
+    "schema.graphql",
+    "tests/javascript"
   ]
 }
