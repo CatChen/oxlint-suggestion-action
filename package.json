@@ -1,6 +1,6 @@
 {
   "name": "oxlint-suggestion-action",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "This GitHub Action runs Oxlint and provides inline feedback to the changes in a Pull Request.",
   "homepage": "https://github.com/CatChen/oxlint-suggestion-action#readme",
   "bugs": {
