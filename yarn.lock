@@ -5,28 +5,28 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"@0no-co/graphql.web@npm:^1.0.5":
-  version: 1.2.0
-  resolution: "@0no-co/graphql.web@npm:1.2.0"
+"@0no-co/graphql.web@npm:^1.3.1":
+  version: 1.3.2
+  resolution: "@0no-co/graphql.web@npm:1.3.2"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
   peerDependenciesMeta:
     graphql:
       optional: true
-  checksum: 10c0/4eed600962bfab42afb49cddcfb31a47b00502f59707609cf160559920ce0f5cf8874791e4cafc465ede30ae291992f3f892bc757b2a989e80e50e358f71c518
+  checksum: 10c0/ba55ed4953e922ab41bbaef36317d48e615b0b1696ced24dbcf812136ebe37778e052d753a498926a8ff39843d379f5207263fc765632c1e51041188e694ded8
   languageName: node
   linkType: hard
 
 "@0no-co/graphqlsp@npm:^1.12.12":
-  version: 1.15.4
-  resolution: "@0no-co/graphqlsp@npm:1.15.4"
+  version: 1.17.2
+  resolution: "@0no-co/graphqlsp@npm:1.17.2"
   dependencies:
-    "@gql.tada/internal": "npm:^1.0.0"
+    "@gql.tada/internal": "npm:^1.2.0"
     graphql: "npm:^15.5.0 || ^16.0.0 || ^17.0.0"
   peerDependencies:
     graphql: ^15.5.0 || ^16.0.0 || ^17.0.0
     typescript: ^5.0.0 || ^6.0.0
-  checksum: 10c0/3cf8c26a08782c28b232c3b0425dcc6fea2cf60c8dce98e40501078d60a2cdd26fd6f84786d93e3298dffec32ffccc436180338e1002fac4d800d69cf44ca2ed
+  checksum: 10c0/4de404dc4ceeec0ba1dd5ebb02eb194bb2d7112a485bc3544f55a861f87a1ad0e0e1ca381ea847b13ae4361e3f68868309a23c516798bfcf72822659f42b87f7
   languageName: node
   linkType: hard
 
@@ -352,15 +352,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gql.tada/internal@npm:^1.0.0":
-  version: 1.0.8
-  resolution: "@gql.tada/internal@npm:1.0.8"
+"@gql.tada/internal@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@gql.tada/internal@npm:1.2.0"
   dependencies:
-    "@0no-co/graphql.web": "npm:^1.0.5"
+    "@0no-co/graphql.web": "npm:^1.3.1"
   peerDependencies:
     graphql: ^15.5.0 || ^16.0.0 || ^17.0.0
-    typescript: ^5.0.0
-  checksum: 10c0/dd9b34296160f7eb4374b1791dd9353fd4147f4d7e2a3a8e2974c2319dc6165a4458c19d9b517a3f7764da4e7a4401c099fdf1936841de02c0e565db95d64a5d
+    typescript: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
+  checksum: 10c0/76b40c4e90c4b13f5a5cf208edeff40f557814d11856c11c4d23df79c5488fad3f6754c08f5ec137a9b0b38dc04fcd51d4a26ff6775507c2e4063281a85c8418
   languageName: node
   linkType: hard
 
