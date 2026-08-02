@@ -23326,6 +23326,10 @@ enum MigrationSourceType @docsCategory(name: "migrations") {
   A GitHub Migration API source.
   """
   GITHUB_ARCHIVE
+  """
+  A GitLab migration source.
+  """
+  GITLAB
 }
 
 """
