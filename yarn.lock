@@ -524,8 +524,8 @@ __metadata:
   linkType: hard
 
 "@graphql-codegen/near-operation-file-preset@npm:^6.0.1":
-  version: 6.0.1
-  resolution: "@graphql-codegen/near-operation-file-preset@npm:6.0.1"
+  version: 6.0.2
+  resolution: "@graphql-codegen/near-operation-file-preset@npm:6.0.2"
   dependencies:
     "@graphql-codegen/add": "npm:^8.0.0"
     "@graphql-codegen/plugin-helpers": "npm:^8.0.0"
@@ -535,7 +535,7 @@ __metadata:
     tslib: "npm:^2.8.1"
   peerDependencies:
     graphql: ^16.0.0 || ^17.0.0
-  checksum: 10c0/6b3276fd61eca2089de614965de5d9cdd5788ecb64e93dd9b2d49655ac7a913dae3d4647e7f537345b5a9f526932b22b094bec88d956acf33c30bce00a761457
+  checksum: 10c0/2240bf12fc1b7173a325e90be077cc2341625887fae650b6f046599f22c10ab94c34dd4b84cf27c09d7727d538f5ec2852093412fbc375ddbe17147b915cc395
   languageName: node
   linkType: hard
 
